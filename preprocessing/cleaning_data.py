@@ -1,6 +1,6 @@
-from model.pydantic_model import PropertyInput
+from preprocessing.property_input import PropertyInput
 
 def preprocess(data: PropertyInput) -> dict:
-    # Do all the preprocessing
+    # TODO: Add all the preprocessing
     preprocessed_data = {}
     return preprocessed_data
