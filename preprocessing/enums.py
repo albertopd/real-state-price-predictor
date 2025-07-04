@@ -14,7 +14,6 @@ class CaseInsensitiveEnum(str, Enum):
 class PropertyType(CaseInsensitiveEnum):
     APARTMENT = "APARTMENT"
     HOUSE = "HOUSE"
-    OTHERS = "OTHERS"
 
 class PropertySubtype(CaseInsensitiveEnum):
     APARTMENT = "APARTMENT"
