@@ -1,9 +1,10 @@
 from pydantic import BaseModel
 
+# TODO: Select what fields we have in our model and decided which one wil lbe optional
 # TODO: Add some basic validation and metada (description of the fields)
 class PropertyInput(BaseModel):
     area: int
-    property_type: str #"APARTMENT" | "HOUSE" | "OTHERS"
+    property_type: str #"APARTMENT" | "HOUSE"
     rooms_number: int 
     zip_code: int
     land_area: int | None = None
