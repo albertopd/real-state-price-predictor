@@ -19,7 +19,7 @@ async def predict_get():
     # TODO: update the message
     return {
         "message": "We have to put in here the explanation of what the POST expect"
-    }
+    }   
 
 # Request that receives the data of a house in JSON format.
 @app.post("/predict")
