@@ -2,7 +2,7 @@ from pydantic import BaseModel, Field
 from preprocessing.enums import PropertyType, PropertySubtype, Province, EPCScore
 from utils.validators import case_insensitive_enum_validator
 
-# TODO: Add some basic validation and metada (description of the fields)
+# TODO: Add more validation and metada (description of the fields)
 class PropertyInput(BaseModel):
     habitableSurface: float = Field(
         title="Habitable surface",

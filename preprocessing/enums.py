@@ -1,8 +1,45 @@
 from enum import Enum
 
 class CaseInsensitiveEnum(str, Enum):
+    """
+    Base Enum class that supports case-insensitive lookup from strings.
+
+    Methods
+    -------
+    from_str(value: str) -> Enum member
+        Converts a string to the corresponding Enum member,
+        ignoring case differences.
+
+    Raises
+    ------
+    TypeError
+        If the input value is not a string.
+    ValueError
+        If the input string does not match any Enum member.
+    """
+
     @classmethod
     def from_str(cls, value: str):
+        """
+        Convert a string to the corresponding Enum member, case-insensitively.
+
+        Parameters
+        ----------
+        value : str
+            String representation of the enum member (case-insensitive).
+
+        Returns
+        -------
+        Enum member
+            Corresponding Enum member matching the input string.
+
+        Raises
+        ------
+        TypeError
+            If value is not a string.
+        ValueError
+            If value does not match any Enum member.
+        """
         if not isinstance(value, str):
             raise TypeError("Value must be a string")
         for item in cls:
@@ -12,10 +49,16 @@ class CaseInsensitiveEnum(str, Enum):
         raise ValueError(f"Invalid value '{value}'. Must be one of: {valid_values}")
 
 class PropertyType(CaseInsensitiveEnum):
+    """
+    Enumeration of property types.
+    """
     APARTMENT = "APARTMENT"
     HOUSE = "HOUSE"
 
 class PropertySubtype(CaseInsensitiveEnum):
+    """
+    Enumeration of property subtypes, covering various detailed categories.
+    """
     APARTMENT = "APARTMENT"
     HOUSE = "HOUSE"
     FLAT_STUDIO = "FLAT_STUDIO"
@@ -42,6 +85,9 @@ class PropertySubtype(CaseInsensitiveEnum):
     PAVILION = "PAVILION"
 
 class Province(CaseInsensitiveEnum):
+    """
+    Enumeration of Belgian provinces.
+    """
     BRUSSELS = "Brussels"
     LUXEMBOURG = "Luxembourg"
     ANTWERP = "Antwerp"
@@ -55,6 +101,9 @@ class Province(CaseInsensitiveEnum):
     HAINAUT = "Hainaut"
 
 class EPCScore(CaseInsensitiveEnum):
+    """
+    Enumeration of EPC (Energy Performance Certificate) scores.
+    """
     A_PLUS = "A+"
     A = "A"
     B = "B"

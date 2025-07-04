@@ -1,7 +1,8 @@
 from fastapi import FastAPI, HTTPException, status
 from preprocessing.property_input import PropertyInput
-from preprocessing.cleaning_data import preprocess
+from preprocessing.pipeline import preprocess
 from predict.prediction import predict
+
 
 # Define the FastAPI app instance
 app = FastAPI()
@@ -21,8 +22,9 @@ async def predict_get():
 @app.post("/predict")
 async def predict_post(data: PropertyInput):
     try:
-        # TODO: handle exceptions/errors
-        df = preprocess(data)
+        df = pd.DataFrame([property_input.model_dump()])
+        df = preprocess(df)
+
         predicted_price = predict(df)
 
         return {"prediction": predicted_price, "status_code": status.HTTP_200_OK}
@@ -66,6 +68,7 @@ sample_data = {
     "hasLivingRoom": True,
 }
 property_input = PropertyInput(**sample_data)
-preprocessed_df = preprocess(property_input)
+df = pd.DataFrame([property_input.model_dump()])
+preprocessed_df = preprocess(df)
 predicted_price = predict(preprocessed_df)
 print(predicted_price)
