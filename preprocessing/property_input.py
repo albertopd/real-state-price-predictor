@@ -1,20 +1,32 @@
 from pydantic import BaseModel
 
+# TODO: Select what fields we have in our model and decided which one wil lbe optional
 # TODO: Add some basic validation and metada (description of the fields)
 class PropertyInput(BaseModel):
-    area: int
-    property_type: str #"APARTMENT" | "HOUSE" | "OTHERS"
-    rooms_number: int 
-    zip_code: int
-    land_area: int | None = None
-    garden: bool | None = None
-    garden_area: int | None = None
-    equipped_kitchen: bool | None = None
-    full_address: str | None = None
-    swimming_pool: bool | None = None
-    furnished: bool | None = None
-    open_fire: bool | None = None
-    terrace: bool | None = None
-    terrace_area: int | None = None
-    facades_number: int | None = None
-    building_state: str | None = None #"NEW" | "GOOD" | "TO RENOVATE" | "JUST RENOVATED" | "TO REBUILD"
+    habitableSurface: float
+    type: str   #"APARTMENT" | "HOUSE"
+    subtype: str
+    province: str
+    postCode: int
+    epcScore: str
+    bedroomCount: int = 0
+    bathroomCount: int = 0
+    toiletCount: int = 0
+    terraceSurface: float = 0.0
+    gardenSurface: float = 0.0
+    hasAttic: bool = False
+    hasGarden: bool = False
+    hasAirConditioning: bool = False
+    hasArmoredDoor: bool = False
+    hasVisiophone: bool = False
+    hasTerrace: bool = False
+    hasOffice: bool = False
+    hasSwimmingPool: bool = False
+    hasFireplace: bool = False
+    hasBasement: bool = False
+    hasDressingRoom: bool = False
+    hasDiningRoom: bool = False
+    hasLift: bool = False
+    hasHeatPump: bool = False
+    hasPhotovoltaicPanels: bool = False
+    hasLivingRoom: bool = False

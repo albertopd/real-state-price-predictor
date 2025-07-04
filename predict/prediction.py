@@ -1,5 +1,14 @@
-def predict(preprocessed_data: dict) -> float:
-    # TODO: load model, do the prediction, handle errors
-    # model = load('model.joblib')
-    # predicted_price = model.predict(preprocessed_data)
-    return 100000 # predicted_price
+import pandas as pd
+import joblib
+import xgboost as xgb
+from sklearn.compose import ColumnTransformer
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import OneHotEncoder, StandardScaler
+
+def predict(df: pd.DataFrame) -> float:
+    with open('model/model.pkl', 'rb') as f:
+        model = joblib.load(f)
+
+    predicted_price = model.predict(df)
+
+    return predicted_price
