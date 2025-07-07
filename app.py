@@ -1,3 +1,4 @@
+import os
 from fastapi import FastAPI, HTTPException, status
 from preprocessing.property_input import PropertyInput
 from preprocessing.cleaning_data import preprocess
@@ -34,3 +35,10 @@ async def predict_post(data: PropertyInput):
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)
         )
+
+
+if __name__ == "__main__":
+    import uvicorn
+
+    port = int(os.environ.get("PORT", 8000))
+    uvicorn.run("app:app", host="0.0.0.0", port=port)

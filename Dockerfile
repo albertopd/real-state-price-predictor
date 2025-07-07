@@ -17,5 +17,5 @@ RUN pip install --upgrade pip
 RUN pip install -r requirements.txt
 
 # Run the app
-# Set host to 0.0.0.0 to make it run on the container's network
-CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8000"]
+# Set host according to python file
+CMD ["python", "app.py"]
