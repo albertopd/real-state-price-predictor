@@ -16,6 +16,8 @@ RUN pip install --upgrade pip
 # Install dependencies from "requirements.txt"
 RUN pip install -r requirements.txt
 
-# Run the app
-# Set host to 0.0.0.0 to make it run on the container's network
-CMD uvicorn app:app --host 0.0.0.0
+# Expose the default port (useful for documentation and local development)
+EXPOSE 8000
+
+# Run the app with dynamic port (Render sets $PORT) and set host to 0.0.0.0 to make it run on the container's network
+CMD ["sh", "-c", "uvicorn app:app --host 0.0.0.0 --port ${PORT:-8000}"]

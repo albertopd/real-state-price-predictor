@@ -1,9 +1,6 @@
-type_map = {
-    "APARTMENT": 1,
-    "HOUSE": 2
-}
+property_type_map = {"APARTMENT": 1, "HOUSE": 2}
 
-subtype_map = {
+property_subtype_map = {
     "APARTMENT": 1,
     "HOUSE": 2,
     "FLAT_STUDIO": 3,
@@ -37,7 +34,7 @@ subtype_map = {
     "OTHER_PROPERTY": 22,
     "OTHERPROPERTY": 22,
     "CASTLE": 23,
-    "PAVILION": 24
+    "PAVILION": 24,
 }
 
 province_map = {
@@ -51,16 +48,7 @@ province_map = {
     "WalloonBrabant": 8,
     "Limburg": 9,
     "Namur": 10,
-    "Hainaut": 11
+    "Hainaut": 11,
 }
 
-epc_score_map = {
-    "A+": 8,
-    "A": 7,
-    "B": 6,
-    "C": 5,
-    "D": 4,
-    "E": 3,
-    "F": 2,
-    "G": 1
-}
+epc_score_map = {"A+": 8, "A": 7, "B": 6, "C": 5, "D": 4, "E": 3, "F": 2, "G": 1}

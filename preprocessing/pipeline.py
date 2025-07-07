@@ -1,15 +1,33 @@
 import pandas as pd
 from sklearn.pipeline import Pipeline
 from preprocessing.transformers import MapEncoder, BooleanEncoder, AddLatLon
-from preprocessing.mappings import type_map, subtype_map, province_map, epc_score_map
+from preprocessing.mappings import (
+    property_type_map,
+    property_subtype_map,
+    province_map,
+    epc_score_map,
+)
 from typing import Union
 
 bool_columns = [
-    "hasAttic", "hasTerrace", "hasGarden", "hasLift", "hasOffice", "hasDiningRoom",
-    "hasSwimmingPool", "hasFireplace", "hasPhotovoltaicPanels", "hasAirConditioning",
-    "hasHeatPump", "hasBasement", "hasArmoredDoor", "hasVisiophone", "hasDressingRoom",
-    "hasLivingRoom"
+    "hasAttic",
+    "hasTerrace",
+    "hasGarden",
+    "hasLift",
+    "hasOffice",
+    "hasDiningRoom",
+    "hasSwimmingPool",
+    "hasFireplace",
+    "hasPhotovoltaicPanels",
+    "hasAirConditioning",
+    "hasHeatPump",
+    "hasBasement",
+    "hasArmoredDoor",
+    "hasVisiophone",
+    "hasDressingRoom",
+    "hasLivingRoom",
 ]
+
 
 class DataFramePipeline(Pipeline):
     """
@@ -47,23 +65,33 @@ class DataFramePipeline(Pipeline):
             - Encoded columns: 'type_encoded', 'subtype_encoded', 'province_encoded', 'epcScore_encoded'
             - Encoded boolean feature columns, each suffixed with '_encoded'
         """
-        column_names = X.columns.tolist() + [
-            "lat", "lon", "type_encoded", "subtype_encoded",
-            "province_encoded", "epcScore_encoded"
-        ] + [f"{col}_encoded" for col in bool_columns]
+        column_names = (
+            X.columns.tolist()
+            + [
+                "lat",
+                "lon",
+                "type_encoded",
+                "subtype_encoded",
+                "province_encoded",
+                "epcScore_encoded",
+            ]
+            + [f"{col}_encoded" for col in bool_columns]
+        )
 
         transformed = super().fit_transform(X, y, **fit_params)
         return pd.DataFrame(transformed, columns=column_names)
 
 
-preprocessing_pipeline = DataFramePipeline([
-    ("latlon", AddLatLon()),
-    ("type", MapEncoder(type_map, "type", "type_encoded")),
-    ("subtype", MapEncoder(subtype_map, "subtype", "subtype_encoded")),
-    ("province", MapEncoder(province_map, "province", "province_encoded")),
-    ("epc", MapEncoder(epc_score_map, "epcScore", "epcScore_encoded")),
-    ("bools", BooleanEncoder(bool_columns)),
-])
+preprocessing_pipeline = DataFramePipeline(
+    [
+        ("latlon", AddLatLon()),
+        ("type", MapEncoder(property_type_map, "type", "type_encoded")),
+        ("subtype", MapEncoder(property_subtype_map, "subtype", "subtype_encoded")),
+        ("province", MapEncoder(province_map, "province", "province_encoded")),
+        ("epc", MapEncoder(epc_score_map, "epcScore", "epcScore_encoded")),
+        ("bools", BooleanEncoder(bool_columns)),
+    ]
+)
 
 
 def preprocess(df: pd.DataFrame) -> pd.DataFrame:
