@@ -8,24 +8,13 @@
     "epcScore": "E",
     "bedroomCount": 3,
     "bathroomCount": 3,
-    "toiletCount": null,
-    "terraceSurface": null,
+
     "gardenSurface": 11.0,
-    "hasAttic": null,
+
     "hasGarden": true,
-    "hasAirConditioning": null,
-    "hasArmoredDoor": null,
-    "hasVisiophone": null,
-    "hasTerrace": null,
-    "hasOffice": null,
-    "hasSwimmingPool": null,
-    "hasFireplace": null,
+
     "hasBasement": true,
-    "hasDressingRoom": null,
-    "hasDiningRoom": null,
-    "hasLift": null,
-    "hasHeatPump": null,
-    "hasPhotovoltaicPanels": null,
+
     "hasLivingRoom": true
   }
 ]

@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import Optional
 
 
@@ -11,24 +11,24 @@ class PropertyInput(BaseModel):
     province: str
     postCode: int
     epcScore: str
-    bedroomCount: Optional[int] = 0
-    bathroomCount: Optional[int] = 0
-    toiletCount: Optional[int] = 0
-    terraceSurface: Optional[float] = 0.0
-    gardenSurface: Optional[float] = 0.0
-    hasAttic: Optional[bool] = False
-    hasGarden: Optional[bool] = False
-    hasAirConditioning: Optional[bool] = False
-    hasArmoredDoor: Optional[bool] = False
-    hasVisiophone: Optional[bool] = False
-    hasTerrace: Optional[bool] = False
-    hasOffice: Optional[bool] = False
-    hasSwimmingPool: Optional[bool] = False
-    hasFireplace: Optional[bool] = False
-    hasBasement: Optional[bool] = False
-    hasDressingRoom: Optional[bool] = False
-    hasDiningRoom: Optional[bool] = False
-    hasLift: Optional[bool] = False
-    hasHeatPump: Optional[bool] = False
-    hasPhotovoltaicPanels: Optional[bool] = False
-    hasLivingRoom: Optional[bool] = False
+    bedroomCount: Optional[int] = Field(default=0)
+    bathroomCount: Optional[int] = Field(default=0)
+    toiletCount: Optional[int] = Field(default=0)
+    terraceSurface: Optional[float] = Field(default=0.0)
+    gardenSurface: Optional[float] = Field(default=0.0)
+    hasAttic: Optional[bool] = Field(default=False)
+    hasGarden: Optional[bool] = Field(default=False)
+    hasAirConditioning: Optional[bool] = Field(default=False)
+    hasArmoredDoor: Optional[bool] = Field(default=False)
+    hasVisiophone: Optional[bool] = Field(default=False)
+    hasTerrace: Optional[bool] = Field(default=False)
+    hasOffice: Optional[bool] = Field(default=False)
+    hasSwimmingPool: Optional[bool] = Field(default=False)
+    hasFireplace: Optional[bool] = Field(default=False)
+    hasBasement: Optional[bool] = Field(default=False)
+    hasDressingRoom: Optional[bool] = Field(default=False)
+    hasDiningRoom: Optional[bool] = Field(default=False)
+    hasLift: Optional[bool] = Field(default=False)
+    hasHeatPump: Optional[bool] = Field(default=False)
+    hasPhotovoltaicPanels: Optional[bool] = Field(default=False)
+    hasLivingRoom: Optional[bool] = Field(default=False)
