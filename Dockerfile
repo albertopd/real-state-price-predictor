@@ -1,5 +1,5 @@
-# Starts from the python 3.10 official docker image
-FROM python:3.10
+# Starts from the python 3.10 official docker image --changed this
+FROM python:3.14
 
 # Create a folder "app" at the root of the image
 RUN mkdir /app
