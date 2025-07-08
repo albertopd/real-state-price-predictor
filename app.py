@@ -2,7 +2,7 @@ import uvicorn
 from fastapi import FastAPI
 
 from schemas.common import SuccessResponse, ErrorResponse
-from schemas.predict_response import PredictResponse
+from schemas.prediction_result import PredictionResult
 from schemas.predict_request import PredictRequest
 
 from preprocessing.pipeline import preprocess
@@ -24,7 +24,7 @@ app = FastAPI()
             "content": {"application/json": {"example": {"message": "alive"}}},
         }
     },
-    response_model_exclude_none=True
+    response_model_exclude_none=True,
 )
 async def root():
     """
@@ -52,7 +52,7 @@ async def root():
             },
         }
     },
-    response_model_exclude_none=True
+    response_model_exclude_none=True,
 )
 async def predict_get():
     """
@@ -69,15 +69,15 @@ async def predict_get():
 
 @app.post(
     "/predict",
-    response_model=SuccessResponse[PredictResponse],
+    response_model=SuccessResponse[PredictionResult],
     responses={500: {"model": ErrorResponse}},
 )
-async def predict_post(wrapper: PredictRequest):
+async def predict_post(request: PredictRequest):
     """
     Predicts property price based on input features.
 
     Args:
-        wrapper (PropertyInputWrapper): A wrapper containing the input data for the property.
+        request (PredictRequest): Request object containing the input data for the property.
 
     Returns:
         SuccessResponse[PredictionResult]: Predicted price for the given property input.
@@ -86,13 +86,13 @@ async def predict_post(wrapper: PredictRequest):
         ErrorResponse: If preprocessing or prediction fails (e.g., invalid data types, missing encodings, etc.).
     """
     try:
-        data = wrapper.data
+        data = request.data
         df = pd.DataFrame([data.model_dump()])
         df = preprocess(df)
 
         predicted_price = predict(df)
 
-        return SuccessResponse(data=PredictResponse(prediction=predicted_price))
+        return SuccessResponse(data=PredictionResult(prediction=predicted_price))
 
     except Exception as e:
         return ErrorResponse(error=f"Prediction failed: {str(e)}")

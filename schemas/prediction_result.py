@@ -1,7 +1,7 @@
 from pydantic import BaseModel
 
 
-class PredictResponse(BaseModel):
+class PredictionResult(BaseModel):
     prediction: float
 
     model_config = {
