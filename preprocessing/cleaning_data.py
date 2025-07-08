@@ -156,9 +156,8 @@ def add_lat_lon(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-def preprocess(data: PropertyInput) -> pd.DataFrame:
+def preprocess(data_dict: dict) -> pd.DataFrame:
     # Convert to dict
-    data_dict = data.model_dump()
 
     # Convert to single-row DataFrame
     df = pd.DataFrame([data_dict])

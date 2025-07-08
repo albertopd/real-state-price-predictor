@@ -1,5 +1,6 @@
 import os
 from fastapi import FastAPI, HTTPException, status
+import pandas as pd
 from preprocessing.property_input import PropertyInput
 from preprocessing.cleaning_data import preprocess
 from predict.prediction import predict
@@ -26,7 +27,10 @@ async def predict_get():
 async def predict_post(data: PropertyInput):
     try:
         # TODO: handle exceptions/errors
-        df = preprocess(data)
+
+        data_dict = data.model_dump()  # extract dict once here
+        df = preprocess(data_dict)
+        print("-------------Preprocessing completed----------------")
         predicted_price = predict(df)
 
         return {"prediction": predicted_price, "status_code": status.HTTP_200_OK}
