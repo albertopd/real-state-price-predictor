@@ -40,21 +40,21 @@ class PropertyInput(BaseModel):
     type: Annotated[
         PropertyType,
         Field(
-            description=f"Property type. Must be one of these values: {", ".join([pt for pt in PropertyType])}"
+            description=f"Property type. Must be one of these values: {', '.join([pt for pt in PropertyType])}"
         ),
     ]
 
     subtype: Annotated[
         CommonSubtype | ApartmentSubtype | HouseSubtype | None,
         Field(
-            description=f"Property subtype. Must be one of these values: {", ".join([pst for pst in PropertySubtype])}"
+            description=f"Property subtype. Must be one of these values: {', '.join([pst for pst in PropertySubtype])}"
         ),
     ] = None
 
     province: Annotated[
         Province | None,
         Field(
-            description=f"Province where the property is located. Must be one of these values: {", ".join([p for p in Province])}"
+            description=f"Province where the property is located. Must be one of these values: {', '.join([p for p in Province])}"
         ),
     ] = None
 
@@ -95,7 +95,7 @@ class PropertyInput(BaseModel):
     epcScore: Annotated[
         EPCScore | None,
         Field(
-            description=f"Energy performance classification. Must be one of these values: {", ".join([e.value for e in EPCScore])}"
+            description=f"Energy performance classification. Must be one of these values: {', '.join([e.value for e in EPCScore])}"
         ),
     ] = None
 
