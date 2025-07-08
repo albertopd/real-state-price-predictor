@@ -2,7 +2,7 @@ import requests
 import streamlit as st
 import json
 
-URL_API = "http://127.0.0.1:8000/"
+URL_API = "https://house-price-be.onrender.com/"
 
 try:
     response = requests.get(URL_API).json()
