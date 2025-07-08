@@ -66,7 +66,7 @@ with st.form("my_form"):
     "province" : province, 
     "postCode" : postcode,
     "epcScore" : epc_score,
-    "bedroomCoun" : bedroomCount, 
+    "bedroomCount" : bedroomCount, 
     "bathroomCount": bathroomCount,
     "toiletCount": toiletCount,
     "terraceSurface": terraceSurface,
