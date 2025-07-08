@@ -24,7 +24,7 @@ def predict(df: pd.DataFrame) -> int:
 
     predicted_price = model.predict(df)[0]
 
-    # Convert numpy scalar to native Python type (float or int)
+    # Convert numpy scalar to native Python type
     predicted_price_value = predicted_price.item()
 
     return round(predicted_price_value)

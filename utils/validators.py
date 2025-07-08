@@ -1,4 +1,5 @@
-"""Dictionary mapping each Belgian province to its valid postal code ranges.
+"""
+Dictionary mapping each Belgian province to its valid postal code ranges.
 
 Each province is associated with a list of `range` objects that represent 
 the valid postal codes within that region.

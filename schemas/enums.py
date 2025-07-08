@@ -7,6 +7,36 @@ class PropertyType(str, Enum):
     APARTMENT = "APARTMENT"
     HOUSE = "HOUSE"
 
+class CommonSubtype(str, Enum):
+    EXCEPTIONAL_PROPERTY = "EXCEPTIONAL_PROPERTY"
+    MIXED_USE_BUILDING = "MIXED_USE_BUILDING"
+    OTHER_PROPERTY = "OTHER_PROPERTY"
+
+class ApartmentSubtype(str, Enum):
+    APARTMENT = "APARTMENT"
+    FLAT_STUDIO = "FLAT_STUDIO"
+    DUPLEX = "DUPLEX"
+    PENTHOUSE = "PENTHOUSE"
+    GROUND_FLOOR = "GROUND_FLOOR"
+    APARTMENT_BLOCK = "APARTMENT_BLOCK"
+    TRIPLEX = "TRIPLEX"
+    LOFT = "LOFT"
+    SERVICE_FLAT = "SERVICE_FLAT"
+    KOT = "KOT"
+
+class HouseSubtype(str, Enum):
+    HOUSE = "HOUSE"
+    VILLA = "VILLA"
+    TOWN_HOUSE = "TOWN_HOUSE"
+    CHALET = "CHALET"
+    MANOR_HOUSE = "MANOR_HOUSE"
+    MANSION = "MANSION"
+    FARMHOUSE = "FARMHOUSE"
+    BUNGALOW = "BUNGALOW"
+    COUNTRY_COTTAGE = "COUNTRY_COTTAGE"
+    CASTLE = "CASTLE"
+    PAVILION = "PAVILION"
+
 class PropertySubtype(str, Enum):
     """
     Enumeration of property subtypes, covering various detailed categories.
