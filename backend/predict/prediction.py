@@ -5,19 +5,24 @@ from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
 import xgboost as xgb
 import pandas as pd
+class HousePricePredictor:
+    def __init__(self, model_dir: str = None):
+        self.base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        self.model_dir = os.path.join(self.base_dir, "model")
+        self.model_path = os.path.join(self.model_dir, "model.pkl")
+        self.model = self.load_model()
 
 
-def predict(preprocessed_data: dict) -> float:
-    try:
-        df = pd.DataFrame([preprocessed_data])
+    def load_model(self):
+        if not os.path.exists(self.model_path):
+            raise FileNotFoundError(f"Model file not found at: {self.model_path}")
+        model = joblib.load(self.model_path)
+        return model
 
-        base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        model_path = os.path.join(base_dir, "model", "model.pkl")
-        model = joblib.load(model_path)
-
-        predicted_price = model.predict(df)
-        predicted_price = round(float(predicted_price[0]), 2)
-        return predicted_price
-
-    except Exception as e:
-        raise ValueError(f"Prediction failed: {e}")
+    def predict(self, preprocessed_data: dict) -> float:
+        try:
+            df = pd.DataFrame([preprocessed_data])
+            predicted_price = self.model.predict(df)
+            return round(float(predicted_price[0]), 2)
+        except Exception as e:
+            raise ValueError(f"Prediction failed: {e}")
