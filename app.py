@@ -1,36 +1,102 @@
-from fastapi import FastAPI, HTTPException, status
-from preprocessing.property_input import PropertyInput
-from preprocessing.cleaning_data import preprocess
+import uvicorn
+from fastapi import FastAPI
+
+from schemas.common import SuccessResponse, ErrorResponse
+from schemas.predict_response import PredictResponse
+from schemas.predict_request import PredictRequest
+
+from preprocessing.pipeline import preprocess
 from predict.prediction import predict
+
+import pandas as pd
+
 
 # Define the FastAPI app instance
 app = FastAPI()
 
 
-# Request returning "alive" if the server is alive.
-@app.get("/")
+@app.get(
+    "/",
+    response_model=SuccessResponse[None],
+    responses={
+        200: {
+            "description": "Successful heartbeat check",
+            "content": {"application/json": {"example": {"message": "alive"}}},
+        }
+    },
+    response_model_exclude_none=True
+)
 async def root():
-    return {"message": "alive"}
+    """
+    Health check endpoint to confirm the API is running.
+
+    Returns:
+        SuccessResponse: A message confirming the API is alive.
+    """
+    return SuccessResponse(message="alive")
 
 
-# Request returning a string to explain what the POST expect (data and format).
-@app.get("/predict")
+@app.get(
+    "/predict",
+    response_model=SuccessResponse[None],
+    responses={
+        200: {
+            "description": "Instructions on how to use the POST /predict endpoint",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "message": "Send a POST request to /predict with a JSON body matching the schema. "
+                        "See the documentation (Swagger UI) for details."
+                    }
+                }
+            },
+        }
+    },
+    response_model_exclude_none=True
+)
 async def predict_get():
-    # TODO: update the message
-    return {"message": "We have to put in here the explanation of what the POST expect"}
+    """
+    Instructional endpoint that explains how to use the POST /predict route.
+
+    Returns:
+        SuccessResponse: A message with usage instructions.
+    """
+    return SuccessResponse(
+        message="Send a POST request to /predict with a JSON body matching the schema. "
+        "See the documentation (Swagger UI) for details."
+    )
 
 
-# Request that receives the data of a house in JSON format.
-@app.post("/predict")
-async def predict_post(data: PropertyInput):
+@app.post(
+    "/predict",
+    response_model=SuccessResponse[PredictResponse],
+    responses={500: {"model": ErrorResponse}},
+)
+async def predict_post(wrapper: PredictRequest):
+    """
+    Predicts property price based on input features.
+
+    Args:
+        wrapper (PropertyInputWrapper): A wrapper containing the input data for the property.
+
+    Returns:
+        SuccessResponse[PredictionResult]: Predicted price for the given property input.
+
+    Raises:
+        ErrorResponse: If preprocessing or prediction fails (e.g., invalid data types, missing encodings, etc.).
+    """
     try:
-        # TODO: handle exceptions/errors
-        df = preprocess(data)
+        data = wrapper.data
+        df = pd.DataFrame([data.model_dump()])
+        df = preprocess(df)
+
         predicted_price = predict(df)
 
-        return {"prediction": predicted_price, "status_code": status.HTTP_200_OK}
+        return SuccessResponse(data=PredictResponse(prediction=predicted_price))
 
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)
-        )
+        return ErrorResponse(error=f"Prediction failed: {str(e)}")
+
+
+if __name__ == "__main__":
+    uvicorn.run(app, host="0.0.0.0", port=8000)
