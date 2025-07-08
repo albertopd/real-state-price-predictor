@@ -29,6 +29,9 @@ PROPERTY_TYPE_TO_SUBTYPES = {
     },
 }
 
+DEFAULT_APARTMENT_SUBTYPE = "APARTMENT"
+DEFAULT_HOUSE_SUBTYPE = "HOUSE"
+
 
 class PropertyInput(BaseModel):
     """
@@ -45,10 +48,10 @@ class PropertyInput(BaseModel):
     ]
 
     subtype: Annotated[
-        CommonSubtype | ApartmentSubtype | HouseSubtype | None,
+        PropertySubtype | None,
         Field(
-            description=f"Property subtype. Must be one of these values: {', '.join([pst for pst in PropertySubtype])}"
-        ),
+            description=f"Property subtype. Must be one of these values: {', '.join(e.value for e in PropertySubtype)}"
+        )
     ] = None
 
     province: Annotated[
@@ -240,9 +243,9 @@ class PropertyInput(BaseModel):
         """
         if self.subtype is None:
             self.subtype = (
-                ApartmentSubtype.APARTMENT
+                PropertySubtype(DEFAULT_APARTMENT_SUBTYPE)
                 if self.type == PropertyType.APARTMENT
-                else HouseSubtype.HOUSE
+                else PropertySubtype(DEFAULT_HOUSE_SUBTYPE)
             )
         elif self.subtype not in PROPERTY_TYPE_TO_SUBTYPES[self.type]:
             raise ValueError(
@@ -255,7 +258,22 @@ class PropertyInput(BaseModel):
     @model_validator(mode="after")
     def validate_postalcode_infer_province(self) -> "PropertyInput":
         """
-        Validates postal code and infers the province if not provided.
+        Validates the postal code against the province and infers the province if missing.
+
+        - If `postCode` is provided and `province` is also provided:
+            - Checks if the postal code is valid within the specified province.
+            - Raises a ValueError if the postal code is outside the valid ranges for that province.
+        - If `postCode` is provided but `province` is not:
+            - Checks if the postal code is valid in any province.
+            - Raises a ValueError if the postal code does not belong to any province range.
+            - Otherwise, infers the province from the postal code and sets `province` accordingly.
+        - If `postCode` is not provided, no validation or inference is performed.
+
+        Returns:
+            PropertyInput: The validated and possibly updated instance with inferred province.
+
+        Raises:
+            ValueError: If the postal code is invalid for the given or any province, with details on valid postal code ranges.
         """
         if self.postCode is not None:
             if self.province is not None:

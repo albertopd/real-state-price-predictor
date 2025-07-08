@@ -37,34 +37,17 @@ class HouseSubtype(str, Enum):
     CASTLE = "CASTLE"
     PAVILION = "PAVILION"
 
-class PropertySubtype(str, Enum):
-    """
-    Enumeration of property subtypes, covering various detailed categories.
-    """
-    APARTMENT = "APARTMENT"
-    HOUSE = "HOUSE"
-    FLAT_STUDIO = "FLAT_STUDIO"
-    DUPLEX = "DUPLEX"
-    PENTHOUSE = "PENTHOUSE"
-    GROUND_FLOOR = "GROUND_FLOOR"
-    APARTMENT_BLOCK = "APARTMENT_BLOCK"
-    MANSION = "MANSION"
-    EXCEPTIONAL_PROPERTY = "EXCEPTIONAL_PROPERTY"
-    MIXED_USE_BUILDING = "MIXED_USE_BUILDING"
-    TRIPLEX = "TRIPLEX"
-    LOFT = "LOFT"
-    VILLA = "VILLA"
-    TOWN_HOUSE = "TOWN_HOUSE"
-    CHALET = "CHALET"
-    MANOR_HOUSE = "MANOR_HOUSE"
-    SERVICE_FLAT = "SERVICE_FLAT"
-    KOT = "KOT"
-    FARMHOUSE = "FARMHOUSE"
-    BUNGALOW = "BUNGALOW"
-    COUNTRY_COTTAGE = "COUNTRY_COTTAGE"
-    OTHER_PROPERTY = "OTHER_PROPERTY"
-    CASTLE = "CASTLE"
-    PAVILION = "PAVILION"
+# Merge all enum values into one dictionary (no duplicates)
+def _collect_property_subtypes():
+    seen = {}
+    for enum_cls in [CommonSubtype, ApartmentSubtype, HouseSubtype]:
+        for item in enum_cls:
+            if item.name not in seen:
+                seen[item.name] = item.value
+    return seen
+
+# Dynamically create PropertySubtype Enum from merged values
+PropertySubtype = Enum("PropertySubtype", _collect_property_subtypes(), type=str)
 
 class Province(str, Enum):
     """
