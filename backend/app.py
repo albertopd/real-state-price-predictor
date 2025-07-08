@@ -58,9 +58,10 @@ class PredictionAPI:
         # Request that receives the data of a house in JSON format.
         @self.app.post("/predict")
         async def predict_post(data: PropertyInput):
-            preprocessed_data = preprocess(data)
-            predicted_price = predict(preprocessed_data)
+            preprocessed_data = self.preprocessor.preprocess(data)
+            predicted_price = self.predictor.predict(preprocessed_data)
             return {"prediction": predicted_price, "status_code": 200}
+            
         
         @self.app.get("/compare")
         async def compare_get(data: CompareInput):
@@ -97,9 +98,9 @@ class PredictionAPI:
         }}
         
         @self.app.post("/compare")
-        async def compare_price(self, data: CompareInput):
-            preprocessed_data = self.preprocessor(data.property)
-            predicted_price = self.predict(preprocessed_data)
+        async def compare_price(data: CompareInput):
+            preprocessed_data = self.preprocessor.preprocess(data.property)
+            predicted_price = self.predictor.predict(preprocessed_data)
             diff = data.actual_price - predicted_price
             abs_diff = abs(diff)
             percentage_diff = abs_diff / predicted_price
@@ -118,7 +119,7 @@ class PredictionAPI:
         
     def register_exception_handlers(self):
         @self.app.exception_handler(RequestValidationError)
-        async def validation_exception_handler(self, request: Request, exc: RequestValidationError):
+        async def validation_exception_handler(request: Request, exc: RequestValidationError):
             details = []
             for err in exc.errors():
                 field = err["loc"][1] if len(err["loc"]) > 1 else err["loc"][0]
@@ -129,7 +130,7 @@ class PredictionAPI:
         content={"error": "Invalid Input", "detail": details},)
         
         @self.app.exception_handler(ValueError)
-        async def value_error_handler(self, request: Request, exc: ValueError):
+        async def value_error_handler(request: Request, exc: ValueError):
             return JSONResponse( status_code=status.HTTP_400_BAD_REQUEST,
         content={"error": "Invalid Input", "detail": str(exc)},)
             

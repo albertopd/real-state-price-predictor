@@ -49,35 +49,25 @@ class PropertyPreprocessor:
         "APARTMENT": 1,
         "HOUSE": 2,
         "FLAT_STUDIO": 3,
-        "FLATSTUDIO": 3,  # Handle version without underscore
         "DUPLEX": 4,
         "PENTHOUSE": 5,
         "GROUND_FLOOR": 6,
-        "GROUNDFLOOR": 6,  # Handle version without underscore
         "APARTMENT_BLOCK": 7,
-        "APARTMENTBLOCK": 7,  # Handle version without underscore
         "MANSION": 8,
         "EXCEPTIONAL_PROPERTY": 9,
-        "EXCEPTIONALPROPERTY": 9,  # Handle version without underscore
         "MIXED_USE_BUILDING": 10,
-        "MIXEDUSEBUILDING": 10,  # Handle version without underscore
         "TRIPLEX": 11,
         "LOFT": 12,
         "VILLA": 13,
         "TOWN_HOUSE": 14,
-        "TOWNHOUSE": 14,  # Handle version without underscore
         "CHALET": 15,
         "MANOR_HOUSE": 16,
-        "MANORHOUSE": 16,  # Handle version without underscore
         "SERVICE_FLAT": 17,
-        "SERVICEFLAT": 17,  # Handle version without underscore
         "KOT": 18,
         "FARMHOUSE": 19,
         "BUNGALOW": 20,
         "COUNTRY_COTTAGE": 21,
-        "COUNTRYCOTTAGE": 21,  # Handle version without underscore
         "OTHER_PROPERTY": 22,
-        "OTHERPROPERTY": 22,  # Handle version without underscore
         "CASTLE": 23,
         "PAVILION": 24,
     }
