@@ -8,24 +8,22 @@ class PropertyInput(BaseModel):
     habitableSurface: Annotated[
         float, Field(gt=0, description="Must be a float: greater than zero")
     ]
-    type: Annotated[
-        str, Field(description='Must be a string: "APARTMENT" or "HOUSE"')
-    ]  # "APARTMENT" | "HOUSE"
+    type: Annotated[str, Field(description='Must be a string: "APARTMENT" or "HOUSE"')]
     subtype: Annotated[str, Field(description="Must be a string")]
     province: Annotated[str, Field(description="Must be a province of Belgium")]
     postCode: Annotated[int, Field(description="Must be a postal code of Belgium")]
     epcScore: Annotated[
         str | None, Field(description="Must be a value between A+ and G")
-    ] = None
+    ] = "C"
     bedroomCount: Annotated[
         int, Field(ge=0, description="Number of bedrooms must be ≥ 0.")
-    ] = 0
+    ] = 3
     bathroomCount: Annotated[
         int, Field(ge=0, description="Number of bedrooms. Must be ≥ 0.")
-    ] = 0
+    ] = 1
     toiletCount: Annotated[
         int | None, Field(ge=0, description="Number of toilets. Must be ≥ 0.")
-    ] = 0
+    ] = 2
     terraceSurface: Annotated[
         float | None, Field(ge=0, description="Must be a float ≥ zero")
     ] = 0

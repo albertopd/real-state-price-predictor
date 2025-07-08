@@ -1,20 +1,18 @@
 [
   {
-    "habitableSurface": 184.0,
+    "habitableSurface": 168.0,
     "type": "HOUSE",
-    "subtype": "APARTMENT_BLOCK",
-    "province": "Antwerp",
-    "postCode": 2060,
-    "epcScore": "E",
+    "subtype": "BUNGALOW",
+    "province": "EastFlanders",
+    "postCode": 9552,
+    "epcScore": "D",
     "bedroomCount": 3,
-    "bathroomCount": 3,
-
-    "gardenSurface": 11.0,
-
+    "bathroomCount": 1,
+    "toiletCount": 1,
+    "gardenSurface": 560.0,
+    "hasAttic": true,
     "hasGarden": true,
-
-    "hasBasement": true,
-
+    "hasFireplace": true,
     "hasLivingRoom": true
   }
 ]

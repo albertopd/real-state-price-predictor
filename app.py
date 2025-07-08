@@ -18,8 +18,36 @@ async def root():
 # Request returning a string to explain what the POST expect (data and format).
 @app.get("/predict")
 async def predict_get():
-    # TODO: update the message
-    return {"message": "We have to put in here the explanation of what the POST expect"}
+    message_predict = {
+        "habitableSurface [Mandatory]": "Float-type number that describes the livable area of the property",
+        "type [Mandatory]": 'String-type input that indicates if the property is a "HOUSE" or an "APARTMENT"',
+        "subtype [Mandatory]": "String-type input that indicates the subtype of property",
+        "province [Mandatory]": "String-type input that indicates in which Belgian province the property is located. Must be a valid province",
+        "postCode [Mandatory]": "Int-type number that indicates the property location",
+        "bedroomCount [Mandatory]": "Int-type number that indicates the number of bedrooms",
+        "bathroomCount [Mandatory]": "Int-type number that indicates the number of bathrooms",
+        "toiletCount [Optional]": "Int-type number that indicates the number of toilets",
+        "epcScore [Optional]": "String-type input that indicates the value of the energy score. Values between A+ and G",
+        "terraceSurface [Optional]": "Float-type number that indicates the area of the terrace, if present",
+        "gardenSurface [Optional]": "Float-type number that indicates the are of the garden, if present",
+        "hasAttic [Optional]": "Bool-type input that indicates if the property has an attic",
+        "hasGarden [Optional]": "Bool-type input that indicates if the property has a garden",
+        "hasAirConditioning [Optional]": "Bool-type input that indicates if the property has air conditioning",
+        "hasArmoredDoor [Optional]": "Bool-type input that indicates if the property has an armored door",
+        "hasVisiophone [Optional]": "Bool-type input that indicates if the property has visiophone",
+        "hasOffice [Optional]": "Bool-type input that indicates if the property has an office",
+        "hasSwimmingPool [Optional]": "Bool-type input that indicates if the property has a swimming pool",
+        "hasFireplace [Optional]": "Bool-type input that indicates if the property has a fireplace",
+        "hasBasement [Optional]": "Bool-type input that indicates if the property has a basement",
+        "hasDressingRoom [Optional]": "Bool-type input that indicates if the property has a dressing room",
+        "hasDiningRoom [Optional]": "Bool-type input that indicates if the property has a dining room",
+        "hasLift [Optional]": "Bool-type input that indicates if the property has a lift",
+        "hasHeatPump [Optional]": "Bool-type input that indicates if the property has a heat pump",
+        "hasPhotovoltaicPanels [Optional]": "Bool-type input that indicates if the property has photvoltaic panels",
+        "hasLivingRoom [Optional]": "Bool-type input that indicates if the property has a living room",
+    }
+
+    return {"The POST method requires the following fields": message_predict}
 
 
 # Request that receives the data of a house in JSON format.
