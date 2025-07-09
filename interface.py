@@ -9,6 +9,7 @@ left_column, center_column, right_column = st.columns(3)
 
 with left_column:
     # Manual Inputs
+    st.subheader("Property attributes\n")
     habitableSurface = st.number_input(
         "Habitable Surface",
         format="%f",
@@ -16,8 +17,6 @@ with left_column:
         width=200,
         min_value=0.0,
     )
-
-    postCode = st.number_input("Postal Code", key="postCode", width=200, min_value=0)
 
     bedroomCount = st.number_input(
         "Number of Bedrooms", key="bedroomCount", width=200, min_value=0
@@ -31,9 +30,6 @@ with left_column:
         "Number of Toilets", key="toiletCount", width=200, min_value=0
     )
 
-
-with center_column:
-    # Selectors
     type_p = st.selectbox("Type of Property", ("HOUSE", "APARTMENT"), width=200)
 
     subtype = st.selectbox(
@@ -67,6 +63,10 @@ with center_column:
         width=200,
     )
 
+with center_column:
+
+    st.subheader("Property location\n")
+
     province = st.selectbox(
         "Belgian Province",
         (
@@ -85,6 +85,9 @@ with center_column:
         width=200,
     )
 
+    postCode = st.number_input("Postal Code", key="postCode", width=200, min_value=0)
+
+    st.subheader("Energy Info\n")
     epcScore = st.selectbox(
         "Energy Score (EPC)",
         ("A+", "A", "B", "C", "D", "E", "F", "G", "Not Available"),
@@ -98,6 +101,8 @@ gardenSurface = 0
 terraceSurface = 0
 
 with right_column:
+    st.subheader("Additional Features\n")
+
     hasGarden = st.checkbox("Garden")
     if hasGarden:
         gardenSurface = st.number_input(
@@ -164,7 +169,9 @@ input_data = {
 
 print(input_data)
 
-get_prediction = st.button("Get Price Prediction")
+get_prediction = st.button(
+    "Get Price Prediction", type="primary", use_container_width=True
+)
 if get_prediction:
 
     try:
@@ -175,7 +182,13 @@ if get_prediction:
 
         if response.status_code == 200:
             st.success("Price Prediction")
-            st.write(f"€ {response.json()['prediction']}")
+
+            st.markdown(
+                f"€ {response.json()['prediction']}",
+                unsafe_allow_html=False,
+                help=None,
+                width="stretch",
+            )
         else:
             error_message = response.json().get("detail", "Unknown error")
             detail = response.json().get("detail")
