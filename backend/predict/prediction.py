@@ -5,13 +5,14 @@ from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
 import xgboost as xgb
 import pandas as pd
+
+
 class HousePricePredictor:
     def __init__(self, model_dir: str = None):
         self.base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         self.model_dir = os.path.join(self.base_dir, "model")
         self.model_path = os.path.join(self.model_dir, "model.pkl")
         self.model = self.load_model()
-
 
     def load_model(self):
         if not os.path.exists(self.model_path):

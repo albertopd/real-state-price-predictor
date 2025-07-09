@@ -1,6 +1,7 @@
 from pydantic import BaseModel, Field
 from typing import Optional
 
+
 class PropertyInput(BaseModel):
     habitableSurface: float = Field(description="Total habitable area in m²")
     type: str = Field(description="Main property type: APARTMENT or HOUSE")
