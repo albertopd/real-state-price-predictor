@@ -1,6 +1,6 @@
 from pydantic import BaseModel, Field, field_validator
 from typing import Annotated
-from validation import get_belgian_postcodes
+from preprocessing.validation import get_belgian_postcodes
 
 
 # TODO: Add some basic validation and metada (description of the fields)
