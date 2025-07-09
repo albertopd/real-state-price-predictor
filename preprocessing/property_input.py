@@ -1,8 +1,8 @@
-from pydantic import BaseModel, Field
-from typing import Optional, Annotated
+from pydantic import BaseModel, Field, field_validator
+from typing import Annotated
+from validation import get_belgian_postcodes
 
 
-# TODO: Select what fields we have in our model and decided which one wil lbe optional
 # TODO: Add some basic validation and metada (description of the fields)
 class PropertyInput(BaseModel):
     habitableSurface: Annotated[
@@ -24,12 +24,15 @@ class PropertyInput(BaseModel):
     toiletCount: Annotated[
         int | None, Field(ge=0, description="Number of toilets. Must be ≥ 0.")
     ] = 2
-    terraceSurface: Annotated[
-        float | None, Field(ge=0, description="Must be a float ≥ zero")
-    ] = 0
+
     gardenSurface: Annotated[
         float | None, Field(ge=0, description="Must be a float ≥ zero")
     ] = 0
+
+    terraceSurface: Annotated[
+        float | None, Field(ge=0, description="Must be a float ≥ zero")
+    ] = 0
+
     hasAttic: Annotated[
         bool | None,
         Field(
@@ -37,6 +40,7 @@ class PropertyInput(BaseModel):
             description="Property has an attic. If not, default value will be False",
         ),
     ] = False
+
     hasGarden: Annotated[
         bool | None,
         Field(
@@ -44,6 +48,15 @@ class PropertyInput(BaseModel):
             description="Property has a garden. If not, default value will be False",
         ),
     ] = False
+
+    hasTerrace: Annotated[
+        bool | None,
+        Field(
+            default=False,
+            description="Property has terrace. If not, default value will be False",
+        ),
+    ] = False
+
     hasAirConditioning: Annotated[
         bool | None,
         Field(
@@ -65,13 +78,7 @@ class PropertyInput(BaseModel):
             description="Property has visiophone. If not, default value will be False",
         ),
     ] = False
-    hasTerrace: Annotated[
-        bool | None,
-        Field(
-            default=False,
-            description="Property has terrace. If not, default value will be False",
-        ),
-    ] = False
+
     hasOffice: Annotated[
         bool | None,
         Field(
@@ -142,3 +149,10 @@ class PropertyInput(BaseModel):
             description="Property has living room. If not, default value will be False",
         ),
     ] = False
+
+    @field_validator("postCode")
+    def check_valid_postcode(cls, value):
+        valid_postCodes = get_belgian_postcodes()
+        if value not in valid_postCodes:
+            raise ValueError(f"Invalid postal code: {value}.")
+        return value

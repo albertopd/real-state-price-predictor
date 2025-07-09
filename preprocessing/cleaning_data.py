@@ -146,7 +146,7 @@ def add_lat_lon(df: pd.DataFrame) -> pd.DataFrame:
     base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     data_path = os.path.join(
         base_dir, "estefania_drafts", "data", "georef-belgium-postal-codes.csv"
-    )  # have to check this after
+    )
     geo_df = pd.read_csv(data_path, delimiter=";")
     geo_df[["lat", "lon"]] = geo_df["Geo Point"].str.split(",", expand=True)
     geo_df["lat"] = geo_df["lat"].astype(float)

@@ -2,7 +2,7 @@
 import requests
 import streamlit as st
 
-st.title("House Price Predictor")
+st.title("House Price Predictor 🇧🇪 ")
 
 left_column, center_column, right_column = st.columns(3)
 
@@ -14,32 +14,27 @@ with left_column:
         format="%f",
         key="habitableSurface",
         width=200,
-        min_value=1.0,
+        min_value=0.0,
     )
-    print(habitableSurface)
 
     postCode = st.number_input("Postal Code", key="postCode", width=200, min_value=0)
-    print(postCode)
 
     bedroomCount = st.number_input(
-        "Bedroom Count", key="bedroomCount", width=200, min_value=0
+        "Number of Bedrooms", key="bedroomCount", width=200, min_value=0
     )
-    print(bedroomCount)
 
     bathroomCount = st.number_input(
-        "Bathroom Count", key="bathroomCount", width=200, min_value=0
+        "Number of Bathrooms", key="bathroomCount", width=200, min_value=0
     )
-    print(bathroomCount)
 
     toiletCount = st.number_input(
-        "Toilet Count", key="toiletCount", width=200, min_value=0
+        "Number of Toilets", key="toiletCount", width=200, min_value=0
     )
-    print(toiletCount)
+
 
 with center_column:
     # Selectors
     type_p = st.selectbox("Type of Property", ("HOUSE", "APARTMENT"), width=200)
-    print(type_p)
 
     subtype = st.selectbox(
         "Subtype of Property",
@@ -71,10 +66,9 @@ with center_column:
         ),
         width=200,
     )
-    print(subtype)
 
     province = st.selectbox(
-        "Brussels Province",
+        "Belgian Province",
         (
             "Brussels",
             "Luxembourg",
@@ -90,23 +84,15 @@ with center_column:
         ),
         width=200,
     )
-    print(province)
 
     epcScore = st.selectbox(
         "Energy Score (EPC)",
-        (
-            "A+",
-            "A",
-            "B",
-            "C",
-            "D",
-            "E",
-            "F",
-            "G",
-        ),
+        ("A+", "A", "B", "C", "D", "E", "F", "G", "Not Available"),
         width=200,
     )
-    print(epcScore)
+    if epcScore == "Not Available":
+        epcScore = None
+
 
 gardenSurface = 0
 terraceSurface = 0
@@ -133,6 +119,7 @@ with right_column:
         )
     hasAttic = st.checkbox("Attic")
     hasAirConditioning = st.checkbox("Air Conditioning")
+    hasArmoredDoor = st.checkbox("Armored Door")
     hasVisiophone = st.checkbox("Visiophone")
     hasOffice = st.checkbox("Office")
     hasSwimmingPool = st.checkbox("Swimming Pool")
@@ -156,31 +143,49 @@ input_data = {
     "bathroomCount": bathroomCount,
     "toiletCount": toiletCount,
     "gardenSurface": gardenSurface,
-    "terraceSurface": gardenSurface,
+    "terraceSurface": terraceSurface,
     "hasAttic": hasAttic,
     "hasGarden": hasGarden,
     "hasTerrace": hasTerrace,
-    "hasFireplace": hasFireplace,
-    "hasLivingRoom": hasLivingRoom,
-    "hasAirConditioning ": hasAirConditioning,
+    "hasAirConditioning": hasAirConditioning,
+    "hasArmoredDoor": hasArmoredDoor,
     "hasVisiophone": hasVisiophone,
-    "hasOffice ": hasOffice,
+    "hasOffice": hasOffice,
     "hasSwimmingPool": hasSwimmingPool,
-    "hasFireplace ": hasFireplace,
+    "hasFireplace": hasFireplace,
     "hasBasement": hasBasement,
     "hasDresssingRoom": hasDresssingRoom,
     "hasDiningRoom": hasDiningRoom,
     "hasLift": hasLift,
     "hasHeatPump": hasHeatPump,
-    "hasPhotovoltaicPanels ": hasPhotovoltaicPanels,
-    "hasLivingRoom ": hasLivingRoom,
+    "hasPhotovoltaicPanels": hasPhotovoltaicPanels,
+    "hasLivingRoom": hasLivingRoom,
 }
+
+print(input_data)
 
 get_prediction = st.button("Get Price Prediction")
 if get_prediction:
-    response = requests.post(
-        "https://challenge-api-deployment-estefania-branch.onrender.com/predict",
-        json=input_data,
-    )
-    st.write("Price Prediction")
-    st.write(response.json()["prediction"])
+
+    try:
+        response = requests.post(
+            "https://challenge-api-deployment-estefania-branch.onrender.com/predict",
+            json=input_data,
+        )
+
+        if response.status_code == 200:
+            st.success("Price Prediction")
+            st.write(f"€ {response.json()['prediction']}")
+        else:
+            error_message = response.json().get("detail", "Unknown error")
+            detail = response.json().get("detail")
+            if isinstance(detail, list):
+                for error in detail:
+                    st.toast(
+                        f"{error.get('msg', 'Unknown error')} at {error.get('loc')}"
+                    )
+            else:
+                st.toast(f"Error: {detail}")
+
+    except requests.exceptions.RequestException as e:
+        st.toast(f"Request failed: {e}")
