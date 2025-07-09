@@ -2,7 +2,7 @@
 
 ## Introduction
 
-This project establishes a RESTful API to predict house prices from property features for the Belgian real-estate Belgian market
+This project establishes a RESTful API to predict house prices from property features for the Belgian real-estate market
 
 ## Description
 
