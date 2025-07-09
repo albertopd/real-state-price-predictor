@@ -1,7 +1,7 @@
 import uvicorn
 from fastapi import FastAPI
 
-from schemas.common import SuccessResponse, ErrorResponse
+from schemas.common import SuccessResponse, ErrorResponse, ValidationErrorResponse
 from schemas.prediction_result import PredictionResult
 from schemas.predict_request import PredictRequest
 
@@ -70,7 +70,28 @@ async def predict_get():
 @app.post(
     "/predict",
     response_model=SuccessResponse[PredictionResult],
-    responses={500: {"model": ErrorResponse}},
+    responses={
+        422: {
+            "model": ValidationErrorResponse,
+            "description": "Validation Error",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "detail": [
+                            {
+                                "type": "enum",
+                                "loc": ["body", "data", "type"],
+                                "msg": "Input should be 'APARTMENT' or 'HOUSE'",
+                                "input": "OTHER",
+                                "ctx": {"expected": "'APARTMENT' or 'HOUSE'"}
+                            }
+                        ]
+                    }
+                }
+            }
+        },
+        500: {"model": ErrorResponse},
+    },
 )
 async def predict_post(request: PredictRequest):
     """

@@ -1,5 +1,6 @@
 from pydantic import BaseModel
 from typing import Generic, TypeVar
+from typing import Any, Dict, List, Union
 
 T = TypeVar("T")
 
@@ -19,16 +20,6 @@ class SuccessResponse(BaseModel, Generic[T]):
 
     message: str = "success"
     data: T | None = None
-
-    model_config = {
-        "json_schema_extra": {
-            "examples": [
-                {
-                    "message": "alive",
-                }
-            ]
-        }
-    }
 
 
 class ErrorResponse(BaseModel):
@@ -55,3 +46,14 @@ class ErrorResponse(BaseModel):
             ]
         }
     }
+
+# Custom 422 response example schema (not enforced, just for docs)
+class ValidationErrorItem(BaseModel):
+    loc: List[Union[str, int]]
+    msg: str
+    type: str
+    input: Union[str, int, float, None] = None
+    ctx: Dict[str, Any] | None = None
+
+class ValidationErrorResponse(BaseModel):
+    detail: List[ValidationErrorItem]
