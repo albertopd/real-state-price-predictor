@@ -4,6 +4,7 @@ import json
 from geopy.geocoders import Nominatim
 import pandas as pd
 import time
+import os
 
 st.set_page_config(
     page_title="Property Price Predictor",
@@ -17,42 +18,42 @@ st.markdown(
 <style>
     .main-header {
         text-align: center;
-        padding: 2rem 0;
-        background: linear-gradient(90deg, #FF4B4B 0%, #721c24 100%);
+        padding: 36px 0;
+        background: linear-gradient(90deg, #FF4B4B 0%, #764ba2 100%);
         color: white;
         border-radius: 10px;
-        margin-bottom: 2rem;
+        margin-bottom: 32px;
     }
     
     .status-container {
         display: flex;
         justify-content: center;
-        margin-bottom: 2rem;
+        margin-bottom: 32px;
     }
     
     .status-good {
         background-color: #d4edda;
         border: 1px solid #c3e6cb;
         color: #155724;
-        padding: 0.75rem 1.25rem;
-        border-radius: 0.25rem;
+        padding: 12px 20px;
+        border-radius: 4px;
     }
     
     .status-error {
         background-color: #f8d7da;
         border: 1px solid #f5c6cb;
         color: #721c24;
-        padding: 0.75rem 1.25rem;
-        border-radius: 0.25rem;
+        padding: 12px 20px;
+        border-radius: 4px;
     }
     
     .prediction-card {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        padding: 2rem;
+        padding: 32px;
         border-radius: 15px;
         color: white;
         text-align: center;
-        margin: 2rem 0;
+        margin: 32px; 0;
         box-shadow: 0 10px 30px rgba(0,0,0,0.1);
     }
     
@@ -60,24 +61,18 @@ st.markdown(
         display: inline-block;
         background-color: #e3f2fd;
         color: #1976d2;
-        padding: 0.25rem 0.75rem;
+        padding: 4px 12px;
         border-radius: 20px;
-        margin: 0.25rem;
-        font-size: 0.875rem;
-    }
-    
-    .section-divider {
-        border: none;
-        height: 2px;
-        background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
-        margin: 2rem 0;
+        margin: 4px;
+        font-size: 14px;
     }
     
     .info-card {
         background-color: #f8f9fa;
-        border-left: 4px solid #667eea;
-        padding: 1rem;
-        margin: 1rem 0;
+        border-left: 6px solid #764ba2;
+        color: black;
+        padding: 16px;
+        margin: 6px 0;
         border-radius: 0 10px 10px 0;
     }
 </style>
@@ -88,14 +83,34 @@ st.markdown(
 URL_API = "https://house-price-be.onrender.com/"
 
 
-def get_location(query):
+def load_geodata():
+    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    data_path = os.path.join(
+        base_dir, "backend", "data", "georef-belgium-postal-codes.csv"
+    )
+    geo_df = pd.read_csv(data_path, delimiter=";")
+    geo_df[["lat", "lon"]] = geo_df["Geo Point"].str.split(",", expand=True)
+    geo_df["lat"] = geo_df["lat"].astype(float)
+    geo_df["lon"] = geo_df["lon"].astype(float)
+    geo_df["postCode"] = geo_df["Post code"].astype(str)
+    grouped_df = geo_df.groupby("postCode")[["lat", "lon"]].mean()
+    return grouped_df
+
+
+def get_location(postcode):
     """Get location coordinates from address query"""
     try:
-        geolocator = Nominatim(user_agent="property-price-predictor")
-        return geolocator.geocode(query)
+        geo_df = load_geodata()
+        postcode = str(postcode)
+        if postcode in geo_df.index:
+            lat, lon = geo_df.loc[postcode]
+            return lat, lon
+        else:
+            st.warning(f"⚠️ Postcode {postcode} not found in database")
+            return None, None
     except Exception as e:
-        st.error(f"Error getting location: {str(e)}")
-        return None
+        st.error(f"❌ Error getting location: {str(e)}")
+        return None, None
 
 
 def check_server_status():
@@ -228,7 +243,7 @@ def main():
                 placeholder="Select detailed subtype...",
                 key="subtype",
             )
-        elif st.session_state.get("property_type") ==  "HOUSE":
+        elif st.session_state.get("property_type") == "HOUSE":
             subtype = st.selectbox(
                 "House Subtype",
                 options=list_house,
@@ -245,6 +260,8 @@ def main():
                 key="subtype",
                 disabled=True,
             )
+
+    st.text(" ")
 
     # Main form
     with st.form("property_form", clear_on_submit=False):
@@ -425,17 +442,18 @@ def main():
 
                     with col2:
                         # Map display
-                        if postcode and province:
+                        if postcode:
                             st.subheader("📍 Location")
-                            location_query = f"{postcode}, {province}, Belgium"
-                            location = get_location(location_query)
+                            lat, lon = get_location(postcode)
 
-                            if location:
+                            if lat and lon:
                                 location_df = pd.DataFrame(
-                                    {
-                                        "lat": [location.latitude],
-                                        "lon": [location.longitude],
-                                    }
+                                    [
+                                        {
+                                            "lat": lat,
+                                            "lon": lon,
+                                        }
+                                    ]
                                 )
                                 st.map(location_df, zoom=10)
                             else:
