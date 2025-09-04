@@ -1,4 +1,4 @@
-# 🏠 Real Estate Price Predictor API
+# 🏠 Real Estate Price Predictor
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE) [![Python](https://img.shields.io/badge/Python-3.13-blue.svg)](https://www.python.org/) [![FastAPI](https://img.shields.io/badge/FastAPI-0.115.14-brightgreen.svg)](https://fastapi.tiangolo.com/)
 
@@ -18,7 +18,7 @@ Built with [FastAPI](https://fastapi.tiangolo.com/) and packaged for quick deplo
 ## 📂 Project Structure
 
 ```
-realstate-price-predictor-api/
+real-state-price-predictor/
 ├── app.py                                # Main FastAPI application entry point
 ├── Dockerfile                            # Docker configuration for containerized deployment
 ├── LICENSE                               # Project license (MIT)
@@ -63,8 +63,8 @@ All required packages are listed in [`requirements.txt`](requirements.txt).
 Clone the repository and install dependencies:
 
 ```bash
-git clone https://github.com/albertopd/realstate-price-predictor-api.git
-cd realstate-price-predictor-api
+git clone https://github.com/albertopd/real-state-price-predictor.git
+cd real-state-price-predictor
 pip install -r requirements.txt
 ```
 
