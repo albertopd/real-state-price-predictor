@@ -1,5 +1,6 @@
+import os
+import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
-from utils.feature_engineering import add_lat_lon
 
 class MapEncoder(BaseEstimator, TransformerMixin):
     """
@@ -125,48 +126,45 @@ class BooleanEncoder(BaseEstimator, TransformerMixin):
 
 class AddLatLon(BaseEstimator, TransformerMixin):
     """
-    Transformer that adds latitude and longitude columns to the DataFrame.
-
-    Uses the external utility function `add_lat_lon` to compute lat/lon values.
-
-    Methods
-    -------
-    fit(X, y=None)
-        Does nothing and returns self. Required for sklearn compatibility.
-    transform(X)
-        Returns a DataFrame with latitude and longitude columns added.
+    Transformer that adds latitude and longitude columns to a DataFrame
+    using a postal codes CSV.
     """
 
-    def fit(self, X, y=None):
+    def __init__(self, georef_csv_path: str | None = None):
         """
-        Fit method - no fitting necessary for this transformer.
-
         Parameters
         ----------
-        X : pandas.DataFrame
-            Input data.
-        y : None
-            Ignored.
-
-        Returns
-        -------
-        self : AddLatLon
-            Returns self.
+        georef_csv_path : str | None
+            Path to the CSV containing postal codes and geolocation.
+            Defaults to '../../data/georef-belgium-postal-codes.csv' relative to this file.
         """
+        if georef_csv_path is None:
+            # Relative path to the data folder from this file
+            base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..", "data"))
+            georef_csv_path = os.path.join(base_dir, "georef-belgium-postal-codes.csv")
+        if not os.path.exists(georef_csv_path):
+            print(f"Error: Georef CSV file not found at {georef_csv_path}")
+            raise FileNotFoundError(f"Georef CSV file not found at {georef_csv_path}")
+        self.georef_csv_path = georef_csv_path
+        self._geo_df_unique = None
+
+    def fit(self, X, y=None):
+        # Load and preprocess georef CSV once during fitting
+        geo_df = pd.read_csv(self.georef_csv_path, delimiter=";")
+        geo_df[["lat", "lon"]] = geo_df["Geo Point"].str.split(",", expand=True)
+        geo_df["lat"] = geo_df["lat"].astype(float)
+        geo_df["lon"] = geo_df["lon"].astype(float)
+        geo_df["postCode"] = geo_df["Post code"].astype(str)
+        self._geo_df_unique = geo_df.drop_duplicates(subset=["postCode"])
         return self
 
     def transform(self, X):
-        """
-        Add latitude and longitude columns to the input DataFrame.
-
-        Parameters
-        ----------
-        X : pandas.DataFrame
-            Input data to transform.
-
-        Returns
-        -------
-        pandas.DataFrame
-            DataFrame with added 'lat' and 'lon' columns.
-        """
-        return add_lat_lon(X)
+        assert self._geo_df_unique is not None, "fit() must be called before transform()"
+        
+        df = X.copy()
+        df["postCode"] = df["postCode"].astype(str)
+        return df.merge(
+            self._geo_df_unique[["postCode", "lat", "lon"]],
+            on="postCode",
+            how="left"
+        )

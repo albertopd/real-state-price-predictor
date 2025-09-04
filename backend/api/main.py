@@ -1,14 +1,12 @@
+import os
+import pandas as pd
 import uvicorn
 from fastapi import FastAPI
-
-from schemas.common import SuccessResponse, ErrorResponse, ValidationErrorResponse
-from schemas.prediction_result import PredictionResult
-from schemas.predict_request import PredictRequest
-
-from preprocessing.pipeline import preprocess
-from predict.prediction import predict
-
-import pandas as pd
+from api.schemas.common import SuccessResponse, ErrorResponse, ValidationErrorResponse
+from api.schemas.prediction_result import PredictionResult
+from api.schemas.predict_request import PredictRequest
+from api.predict.prediction import predict
+from pipelines.preprocessing.pipeline import preprocess
 
 
 # Define the FastAPI app instance
@@ -111,11 +109,14 @@ async def predict_post(request: PredictRequest):
         df = pd.DataFrame([data.model_dump()])
         df = preprocess(df)
 
-        predicted_price = predict(df)
+        base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "models"))
+        model_path = os.path.join(base_dir, "model.joblib")
+        predicted_price = predict(df, model_path)
 
         return SuccessResponse(data=PredictionResult(prediction=predicted_price))
 
     except Exception as e:
+        print(f"Error during prediction: {str(e)}")
         return ErrorResponse(error=f"Prediction failed: {str(e)}")
 
 

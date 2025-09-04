@@ -1,13 +1,12 @@
 import pandas as pd
 from sklearn.pipeline import Pipeline
-from preprocessing.transformers import MapEncoder, BooleanEncoder, AddLatLon
-from preprocessing.mappings import (
+from pipelines.preprocessing.transformers import MapEncoder, BooleanEncoder, AddLatLon
+from pipelines.preprocessing.mappings import (
     property_type_map,
     property_subtype_map,
     province_map,
     epc_score_map,
 )
-from typing import Union
 
 bool_columns = [
     "hasAttic",

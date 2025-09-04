@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from schemas.property_input import PropertyInput 
+from api.schemas.property_input import PropertyInput 
 
 class PredictRequest(BaseModel):
     """

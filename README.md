@@ -1,4 +1,4 @@
-# 🏠 Real Estate Price Predictor API
+# 🏠 Real Estate Price Predictor
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE) [![Python](https://img.shields.io/badge/Python-3.13-blue.svg)](https://www.python.org/) [![FastAPI](https://img.shields.io/badge/FastAPI-0.115.14-brightgreen.svg)](https://fastapi.tiangolo.com/)
 
@@ -18,31 +18,32 @@ Built with [FastAPI](https://fastapi.tiangolo.com/) and packaged for quick deplo
 ## 📂 Project Structure
 
 ```
-realstate-price-predictor-api/
-├── app.py                                # Main FastAPI application entry point
-├── Dockerfile                            # Docker configuration for containerized deployment
-├── LICENSE                               # Project license (MIT)
-├── README.md                             # Project documentation
-├── requirements.txt                      # Python dependencies
-├── data/                                 # Data files used for inference
-│   └── georef-belgium-postal-codes.csv   # Belgian postal codes reference
-├── model/                                # Trained ML model storage
-│   └── model.joblib                      # Serialized model file
-├── predict/                              # Prediction logic
-│   └── prediction.py                     # Functions for price prediction
-├── preprocessing/                        # Data preprocessing pipeline
-│   ├── mappings.py                       # Feature mappings and lookups
-│   ├── pipeline.py                       # Preprocessing pipeline definition
-│   └── transformers.py                   # Custom transformers for data
-├── schemas/                              # Pydantic schemas for request/response validation
-│   ├── common.py                         # Shared schema components
-│   ├── enums.py                          # Enum definitions for property types, etc.
-│   ├── predict_request.py                # Input schema for prediction endpoint
-│   ├── prediction_result.py              # Output schema for prediction results
-│   ├── property_input.py                 # Property feature input schema
-├── utils/                                # Utility functions
-│   ├── feature_engineering.py            # Feature engineering helpers
-│   └── validators.py                     # Input validation utilities
+real-state-price-predictor/
+├── LICENSE
+├── README.md
+├── backend/
+│   ├── Dockerfile                      # Backend Docker configuration
+│   ├── requirements.txt                # Backend Python dependencies
+│   └── api/                            # FastAPI application code
+│       ├── main.py                     # Main FastAPI app entry point
+│       ├── predict/                    # Prediction logic
+│       │   └── prediction.py           # Price prediction functions
+│       └── schemas/                    # Pydantic schemas for validation
+│           ├── common.py               # Shared schema components
+│           ├── enums.py                # Enum definitions
+│           ├── predict_request.py      # Input schema for prediction
+│           ├── prediction_result.py    # Output schema for prediction
+│           ├── property_input.py       # Property feature input schema
+│           └── validators.py           # Input validation utilities
+├── data/
+│   └── georef-belgium-postal-codes.csv # Belgian postal codes reference
+├── libs/
+│   └── preprocessing/                  # Data preprocessing pipeline
+│       ├── mappings.py                 # Feature mappings and lookups
+│       ├── pipeline.py                 # Preprocessing pipeline definition
+│       └── transformers.py             # Custom transformers for data
+├── models/
+│   └── model.joblib                    # Trained ML model
 ```
 
 ## 🧾 Requirements
@@ -54,7 +55,7 @@ Main dependencies include:
 - pandas
 - scikit-learn
 - pydantic
-- python 3.10+
+- python 3.13+
 
 All required packages are listed in [`requirements.txt`](requirements.txt).
 
@@ -63,8 +64,8 @@ All required packages are listed in [`requirements.txt`](requirements.txt).
 Clone the repository and install dependencies:
 
 ```bash
-git clone https://github.com/albertopd/realstate-price-predictor-api.git
-cd realstate-price-predictor-api
+git clone https://github.com/albertopd/real-estate-price-predictor.git
+cd real-estate-price-predictor
 pip install -r requirements.txt
 ```
 
@@ -73,7 +74,8 @@ pip install -r requirements.txt
 Start the FastAPI server locally:
 
 ```bash
-uvicorn app:app --reload
+cd backend
+uvicorn api.main:app --reload
 ```
 
 Visit [http://localhost:8000/docs](http://localhost:8000/docs) to explore the API interactively.
@@ -121,11 +123,11 @@ Visit [http://localhost:8000/docs](http://localhost:8000/docs) to explore the AP
 
 ## 🐳 Docker Deployment
 
-You can run the project inside a Docker container:
+You can run the FastAPI application inside a Docker container:
 
 ```bash
-docker build -t realstate-price-predictor-api .
-docker run -p 8000:8000 realstate-price-predictor-api
+docker build -t real-estate-price-predictor -f backend/Dockerfile .
+docker run -p 8000:8000 real-estate-price-predictor
 ```
 
 ## 📜 License

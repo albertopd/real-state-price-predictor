@@ -1,7 +1,7 @@
 from typing import Annotated
 from pydantic import BaseModel, Field, model_validator
 
-from schemas.enums import (
+from api.schemas.enums import (
     PropertyType,
     CommonSubtype,
     ApartmentSubtype,
@@ -10,7 +10,7 @@ from schemas.enums import (
     Province,
     EPCScore,
 )
-from utils.validators import (
+from api.schemas.validators import (
     PROVINCE_POSTAL_CODE_RANGES,
     is_postal_code_valid_in_any_province,
     is_postal_code_valid_for_province,

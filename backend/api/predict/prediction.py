@@ -1,7 +1,8 @@
 import pandas as pd
+import os
 import joblib
 
-def predict(df: pd.DataFrame) -> int:
+def predict(df: pd.DataFrame, model_path: str) -> int:
     """
     Load a pre-trained model and predict a price based on the input DataFrame.
 
@@ -19,7 +20,11 @@ def predict(df: pd.DataFrame) -> int:
     int
         The predicted price rounded to the nearest integer.
     """
-    with open("model/model.joblib", "rb") as f:
+    if not os.path.exists(model_path):
+        print(f"Error: Model file not found at '{model_path}'")
+        raise FileNotFoundError(f"Model file not found at '{model_path}'")
+
+    with open(model_path, "rb") as f:
         model = joblib.load(f)
 
     predicted_price = model.predict(df)[0]
