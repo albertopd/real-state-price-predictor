@@ -1,5 +1,5 @@
 # Starts from the python 3.10 official docker image
-FROM python:3.10-slim
+FROM python:3.13-slim
 
 # Update OS packages to address vulnerabilities
 RUN apt-get update && apt-get upgrade -y && apt-get clean
