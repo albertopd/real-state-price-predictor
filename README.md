@@ -1,14 +1,10 @@
 # 🏠 Real Estate Price Predictor API
 
-[![FastAPI](https://img.shields.io/badge/FastAPI-0.110.0-brightgreen.svg)](https://fastapi.tiangolo.com/)
-[![Python](https://img.shields.io/badge/Python-3.11-blue.svg)](https://www.python.org/)
-[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](LICENSE)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE) [![Python](https://img.shields.io/badge/Python-3.13-blue.svg)](https://www.python.org/) [![FastAPI](https://img.shields.io/badge/FastAPI-0.115.14-brightgreen.svg)](https://fastapi.tiangolo.com/)
 
 This is a machine learning-powered API to **predict property prices in Belgium** based on detailed property features such as location, surface area, room count, and amenities.
 
 Built with [FastAPI](https://fastapi.tiangolo.com/) and packaged for quick deployment via `uvicorn`.
-
----
 
 ## 🚀 Features
 
@@ -19,7 +15,48 @@ Built with [FastAPI](https://fastapi.tiangolo.com/) and packaged for quick deplo
 - Custom preprocessing pipeline.
 - Designed for fast deployment and extensibility.
 
----
+## 📂 Project Structure
+
+```
+realstate-price-predictor-api/
+├── app.py                                # Main FastAPI application entry point
+├── Dockerfile                            # Docker configuration for containerized deployment
+├── LICENSE                               # Project license (MIT)
+├── README.md                             # Project documentation
+├── requirements.txt                      # Python dependencies
+├── data/                                 # Data files used for inference
+│   └── georef-belgium-postal-codes.csv   # Belgian postal codes reference
+├── model/                                # Trained ML model storage
+│   └── model.joblib                      # Serialized model file
+├── predict/                              # Prediction logic
+│   └── prediction.py                     # Functions for price prediction
+├── preprocessing/                        # Data preprocessing pipeline
+│   ├── mappings.py                       # Feature mappings and lookups
+│   ├── pipeline.py                       # Preprocessing pipeline definition
+│   └── transformers.py                   # Custom transformers for data
+├── schemas/                              # Pydantic schemas for request/response validation
+│   ├── common.py                         # Shared schema components
+│   ├── enums.py                          # Enum definitions for property types, etc.
+│   ├── predict_request.py                # Input schema for prediction endpoint
+│   ├── prediction_result.py              # Output schema for prediction results
+│   ├── property_input.py                 # Property feature input schema
+├── utils/                                # Utility functions
+│   ├── feature_engineering.py            # Feature engineering helpers
+│   └── validators.py                     # Input validation utilities
+```
+
+## 🧾 Requirements
+
+Main dependencies include:
+
+- fastapi
+- uvicorn
+- pandas
+- scikit-learn
+- pydantic
+- python 3.10+
+
+All required packages are listed in [`requirements.txt`](requirements.txt).
 
 ## 📦 Installation
 
@@ -31,9 +68,7 @@ cd realstate-price-predictor-api
 pip install -r requirements.txt
 ```
 
----
-
-## 🧪 Usage
+## 🚀 Usage
 
 Start the FastAPI server locally:
 
@@ -43,7 +78,7 @@ uvicorn app:app --reload
 
 Visit [http://localhost:8000/docs](http://localhost:8000/docs) to explore the API interactively.
 
-### Example request to `/predict`:
+**Example request to** `/predict` **endpoint:**
 
 ```json
 {
@@ -73,7 +108,7 @@ Visit [http://localhost:8000/docs](http://localhost:8000/docs) to explore the AP
 }
 ```
 
-Expected response:
+**Expected response:**
 
 ```json
 {
@@ -84,8 +119,6 @@ Expected response:
 }
 ```
 
----
-
 ## 🐳 Docker Deployment
 
 You can run the project inside a Docker container:
@@ -95,32 +128,12 @@ docker build -t realstate-price-predictor-api .
 docker run -p 8000:8000 realstate-price-predictor-api
 ```
 
----
+## 📜 License
 
-## 🧾 Requirements
-
-Main dependencies include:
-
-- fastapi
-- uvicorn
-- pandas
-- scikit-learn
-- pydantic
-- python 3.10+
-
-All required packages are listed in [`requirements.txt`](requirements.txt).
-
----
+This project is licensed under the [MIT License](LICENSE).
 
 ## 👥 Contributors
 
 - [Alberto](https://github.com/albertopd)
 - [Choti](https://github.com/jgchoti)
 - [Estefania](https://github.com/hermstefanny)
----
-
-## ⏳ Timeline
-
-This API was developed as part of the BeCode Data Science & AI challenge during July 2025. It demonstrates the application of machine learning with modern API practices.
-
----
