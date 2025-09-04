@@ -1,4 +1,4 @@
-# 🏠 Real Estate Price Prediction API
+# 🏠 Real Estate Price Predictor API
 
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.110.0-brightgreen.svg)](https://fastapi.tiangolo.com/)
 [![Python](https://img.shields.io/badge/Python-3.11-blue.svg)](https://www.python.org/)
@@ -26,8 +26,8 @@ Built with [FastAPI](https://fastapi.tiangolo.com/) and packaged for quick deplo
 Clone the repository and install dependencies:
 
 ```bash
-git clone https://github.com/albertopd/challenge-api-deployment.git
-cd challenge-api-deployment
+git clone https://github.com/albertopd/realstate-price-predictor-api.git
+cd realstate-price-predictor-api
 pip install -r requirements.txt
 ```
 
@@ -91,8 +91,8 @@ Expected response:
 You can run the project inside a Docker container:
 
 ```bash
-docker build -t property-price-api .
-docker run -p 8000:8000 property-price-api
+docker build -t realstate-price-predictor-api .
+docker run -p 8000:8000 realstate-price-predictor-api
 ```
 
 ---
