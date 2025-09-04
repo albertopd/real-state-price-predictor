@@ -1,5 +1,8 @@
 # Starts from the python 3.10 official docker image
-FROM python:3.10
+FROM python:3.10-slim
+
+# Update OS packages to address vulnerabilities
+RUN apt-get update && apt-get upgrade -y && apt-get clean
 
 # Create a folder "app" at the root of the image
 RUN mkdir /app
