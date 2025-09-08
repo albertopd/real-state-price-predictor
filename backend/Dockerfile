@@ -12,12 +12,12 @@ COPY backend/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy backend source
-COPY backend/api /app/api
-COPY backend/pipelines /app/pipelines
+COPY ./app /app/app
+COPY ./pipelines /app/pipelines
+COPY ./predictors /app/predictors
 
-# Copy models, and data
-COPY models /models
-COPY data /data
+# Copy models
+COPY ./ml_models /app/ml_models
 
 # Run FastAPI app with uvicorn
-CMD ["uvicorn", "api.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]

@@ -2,7 +2,8 @@ import pandas as pd
 import os
 import joblib
 
-def predict(df: pd.DataFrame, model_path: str) -> int:
+
+def predict_price(df: pd.DataFrame, model_path: str) -> int:
     """
     Load a pre-trained model and predict a price based on the input DataFrame.
 

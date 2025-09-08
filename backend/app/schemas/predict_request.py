@@ -1,18 +1,19 @@
 from pydantic import BaseModel
-from api.schemas.property_input import PropertyInput 
+from app.schemas.property_input import PropertyInput
+
 
 class PredictRequest(BaseModel):
     """
     Wrapper schema to encapsulate a PropertyInput instance in a request body.
     """
 
-    data: PropertyInput
+    property: PropertyInput
 
     model_config = {
         "json_schema_extra": {
             "examples": [
                 {
-                    "data": {
+                    "property": {
                         "habitableSurface": 500,
                         "type": "HOUSE",
                         "subtype": "VILLA",
@@ -37,7 +38,7 @@ class PredictRequest(BaseModel):
                     }
                 },
                 {
-                    "data": {
+                    "property": {
                         "habitableSurface": 85,
                         "type": "APARTMENT",
                         "subtype": "PENTHOUSE",
@@ -55,7 +56,7 @@ class PredictRequest(BaseModel):
                     }
                 },
                 {
-                    "data": {
+                    "property": {
                         "habitableSurface": 35,
                         "type": "APARTMENT",
                         "subtype": "FLAT_STUDIO",

@@ -1,12 +1,14 @@
 import pandas as pd
 from sklearn.pipeline import Pipeline
-from pipelines.preprocessing.transformers import MapEncoder, BooleanEncoder, AddLatLon
+from pipelines.preprocessing.encoders import CategoryMapper, BooleanBinarizer
+from pipelines.preprocessing.enrichers import PostalCodeEnricher
 from pipelines.preprocessing.mappings import (
     property_type_map,
     property_subtype_map,
     province_map,
     epc_score_map,
 )
+
 
 bool_columns = [
     "hasAttic",
@@ -28,7 +30,7 @@ bool_columns = [
 ]
 
 
-class DataFramePipeline(Pipeline):
+class PreprocessingPipeline(Pipeline):
     """
     A scikit-learn Pipeline subclass that returns the transformed output as a pandas DataFrame.
 
@@ -64,52 +66,19 @@ class DataFramePipeline(Pipeline):
             - Encoded columns: 'type_encoded', 'subtype_encoded', 'province_encoded', 'epcScore_encoded'
             - Encoded boolean feature columns, each suffixed with '_encoded'
         """
-        column_names = (
-            X.columns.tolist()
-            + [
-                "lat",
-                "lon",
-                "type_encoded",
-                "subtype_encoded",
-                "province_encoded",
-                "epcScore_encoded",
-            ]
-            + [f"{col}_encoded" for col in bool_columns]
-        )
-
         transformed = super().fit_transform(X, y, **fit_params)
-        return pd.DataFrame(transformed, columns=column_names)
+        if isinstance(transformed, pd.DataFrame):
+            return transformed
+        return pd.DataFrame(transformed, index=X.index)
 
 
-preprocessing_pipeline = DataFramePipeline(
+preprocessing_pipeline = PreprocessingPipeline(
     [
-        ("latlon", AddLatLon()),
-        ("type", MapEncoder(property_type_map, "type", "type_encoded")),
-        ("subtype", MapEncoder(property_subtype_map, "subtype", "subtype_encoded")),
-        ("province", MapEncoder(province_map, "province", "province_encoded")),
-        ("epc", MapEncoder(epc_score_map, "epcScore", "epcScore_encoded")),
-        ("bools", BooleanEncoder(bool_columns)),
+        ("geo", PostalCodeEnricher()),
+        ("type", CategoryMapper(property_type_map, "type", "type_encoded")),
+        ("subtype", CategoryMapper(property_subtype_map, "subtype", "subtype_encoded")),
+        ("province", CategoryMapper(province_map, "province", "province_encoded")),
+        ("epc", CategoryMapper(epc_score_map, "epcScore", "epcScore_encoded")),
+        ("bools", BooleanBinarizer(bool_columns)),
     ]
 )
-
-
-def preprocess(df: pd.DataFrame) -> pd.DataFrame:
-    """
-    Preprocess the input property DataFrame by applying a series of transformations.
-
-    This function applies the full preprocessing pipeline which:
-    - Adds latitude and longitude based on address or coordinates
-    - Maps categorical columns to encoded numeric values
-    - Encodes multiple boolean feature columns
-
-    Parameters
-    ----------
-    df : pd.DataFrame
-        Raw input DataFrame containing property data.
-
-    Returns
-    -------
-    pd.DataFrame
-        Transformed DataFrame including original features and newly added encoded columns.
-    """
-    return preprocessing_pipeline.fit_transform(df)
