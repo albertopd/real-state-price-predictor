@@ -1,17 +1,129 @@
+version: "3.9"
+
 services:
-
-  backend:
-    build:
-      context: .                      # project root as build context
-      dockerfile: backend/Dockerfile
-
-    ports:
-      - "8000:8000"
-
-    volumes:
-      - ./data:/data                  # mount local data for dev
-      - ./models:/models              # mount local models for dev
-
+  airflow-postgres:
+    image: postgres:15
     environment:
-      - PYTHONDONTWRITEBYTECODE=1
-      - PYTHONUNBUFFERED=1
+      POSTGRES_USER: airflow
+      POSTGRES_PASSWORD: airflow
+      POSTGRES_DB: airflow
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U airflow"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - airflow_db:/var/lib/postgresql/data
+    networks: [real_estate]
+
+  airflow-redis:
+    image: redis:7
+    networks: [real_estate]
+
+  airflow-init:
+    build:
+      context: ./src/airflow
+      dockerfile: Dockerfile
+    depends_on: [airflow-postgres, airflow-redis]
+    environment:
+      AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@airflow-postgres:5432/airflow
+    entrypoint: /bin/bash
+    command: -c "airflow db init && airflow users create --username admin --password admin --firstname a --lastname b --role Admin --email a@b.com"
+    volumes:
+      - ./src/airflow/dags:/opt/airflow/dags
+    networks: [real_estate]
+
+  airflow-webserver:
+    build:
+      context: ./src/airflow
+      dockerfile: Dockerfile
+    depends_on: [airflow-postgres, airflow-redis]
+    environment:
+      PROJECT_ROOT: /opt/project
+      PYTHONPATH: /opt/project/src 
+      AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@airflow-postgres:5432/airflow
+      AIRFLOW__CELERY__BROKER_URL: redis://airflow-redis:6379/0
+      AIRFLOW__CELERY__RESULT_BACKEND: db+postgresql://airflow:airflow@airflow-postgres:5432/airflow
+    command: webserver
+    ports: ["8089:8080"]
+    volumes:
+      - ./src/airflow/dags:/opt/airflow/dags
+      - ./src/ml:/opt/project/src/ml
+      - ./src/scrapers:/opt/project/src/scrapers
+    networks: [real_estate]
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  airflow-scheduler:
+    build:
+      context: ./src/airflow
+      dockerfile: Dockerfile
+    depends_on: [airflow-postgres, airflow-redis, airflow-webserver]
+    environment:
+      PROJECT_ROOT: /opt/project
+      PYTHONPATH: /opt/project/src
+      AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@airflow-postgres:5432/airflow
+      AIRFLOW__CELERY__BROKER_URL: redis://airflow-redis:6379/0
+      AIRFLOW__CELERY__RESULT_BACKEND: db+postgresql://airflow:airflow@airflow-postgres:5432/airflow
+    command: scheduler
+    volumes:
+      - ./src/airflow/dags:/opt/airflow/dags
+      - ./src/ml:/opt/project/src/ml
+      - ./src/scrapers:/opt/project/src/scrapers
+      - ./data:/opt/project/data
+      - ./ml_models:/opt/project/ml_models
+    networks: [real_estate]
+
+  mlflow:
+    image: ghcr.io/mlflow/mlflow:v2.16.0
+    environment:
+      BACKEND_STORE_URI: sqlite:///mlflow.db
+      ARTIFACT_ROOT: /opt/project/ml_runs
+    command: mlflow server --host 0.0.0.0 --port 5001 --backend-store-uri sqlite:///mlflow.db --default-artifact-root /opt/project/ml_runs
+    volumes:
+      - ./ml_runs:/opt/project/ml_runs
+      - ./ml_models:/opt/project/ml_models
+      - ./data:/opt/project/data
+      - ./src/experiments:/opt/project/src/experiments
+    ports:
+      - "5001:5001"
+    networks: [real_estate]
+
+  dashboard-app:
+    build:
+      context: .
+      dockerfile: src/dashboard/Dockerfile
+    volumes:
+      - ./src/dashboard/app:/app/src/dashboard/app
+      - ./data:/app/data
+    ports:
+      - "8501:8501"
+    networks: [real_estate]
+
+  #TODO: Fix the predictor api service
+  # predictor-api:
+  #   build:
+  #     context: .
+  #     dockerfile: backend/Dockerfile
+  #   environment:
+  #     - PYTHONDONTWRITEBYTECODE=1
+  #     - PYTHONUNBUFFERED=1
+  #   volumes:
+  #     - ./ml_models:/ml_models
+  #   ports:
+  #     - "8000:8000"
+  #   networks: [airflow]
+
+networks:
+  real_estate: {}
+
+volumes:
+  airflow_db: {}
+  #TODO: mlruns: {}
+  #TODO: Add volume for all the app data and models

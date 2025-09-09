@@ -19,33 +19,70 @@ Built with [FastAPI](https://fastapi.tiangolo.com/) and packaged for quick deplo
 ## 📂 Project Structure
 
 ```
-real-state-price-predictor/
-├── LICENSE
-├── README.md
+real-estate-price-predictor/
+├── airflow/
+│   ├── dags/
+│   │   └── real_estate_pipeline.py
+│   └── requirements.txt
 ├── backend/
-│   ├── Dockerfile                      # Backend Docker configuration
-│   ├── requirements.txt                # Backend Python dependencies
-│   └── api/                            # FastAPI application code
-│       ├── main.py                     # Main FastAPI app entry point
-│       ├── predict/                    # Prediction logic
-│       │   └── prediction.py           # Price prediction functions
-│       └── schemas/                    # Pydantic schemas for validation
-│           ├── common.py               # Shared schema components
-│           ├── enums.py                # Enum definitions
-│           ├── predict_request.py      # Input schema for prediction
-│           ├── prediction_result.py    # Output schema for prediction
-│           ├── property_input.py       # Property feature input schema
-│           └── validators.py           # Input validation utilities
+│   ├── Dockerfile
+│   ├── requirements.txt
+│   ├── ml_models/
+│   │   └── model.joblib
+│   ├── pipelines/
+│   │   ├── __init__.py
+│   │   └── preprocessing/
+│   │       ├── __init__.py
+│   │       ├── encoders.py
+│   │       ├── enrichers.py
+│   │       ├── mappings.py
+│   │       ├── pipeline_definitions.py
+│   │       └── data/
+│   │           └── georef-belgium-postal-codes.csv
+│   ├── predictors/
+│   │   ├── __init__.py
+│   │   └── price_predictor.py
+│   └── app/
+│       ├── __init__.py
+│       ├── main.py
+│       ├── schemas/
+│       │   ├── __init__.py
+│       │   ├── enums.py
+│       │   ├── models.py
+│       │   ├── prediction_result.py
+│       │   ├── predict_request.py
+│       │   ├── property_input.py
+│       │   └── validators.py
+│       └── settings.py
+├── dashboard/
+│   └── app.py
 ├── data/
-│   └── georef-belgium-postal-codes.csv # Belgian postal codes reference
-├── libs/
-│   └── preprocessing/                  # Data preprocessing pipeline
-│       ├── mappings.py                 # Feature mappings and lookups
-│       ├── pipeline.py                 # Preprocessing pipeline definition
-│       └── transformers.py             # Custom transformers for data
+│   ├── analysis/
+│   │   └── .gitkeep
+│   ├── raw/
+│   │   └── .gitkeep
+│   └── training/
+│       └── .gitkeep
+├── docker-compose.airflow.yml
+├── docker-compose.yml
+├── LICENSE
+├── ml/
+│   ├── __init__.py
+│   ├── pipelines/
+│   │   ├── __init__.py
+│   │   ├── analysis_preprocess.py
+│   │   └── training_preprocess.py
+│   └── training/
+│       ├── __init__.py
+│       └── train_regression.py
 ├── models/
-│   └── model.joblib                    # Trained ML model
+│   └── .gitkeep
+├── README.md
+├── scripts/
+│   ├── scrape_apartments.py
+│   └── scrape_houses.py
 ```
+
 
 ## 🧾 Requirements
 
