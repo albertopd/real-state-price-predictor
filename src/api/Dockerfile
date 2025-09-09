@@ -8,16 +8,13 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 WORKDIR /app
 
 # Install dependencies
-COPY backend/requirements.txt .
+COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy backend source
 COPY ./app /app/app
 COPY ./pipelines /app/pipelines
 COPY ./predictors /app/predictors
-
-# Copy models
-COPY ./ml_models /app/ml_models
 
 # Run FastAPI app with uvicorn
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]

@@ -9,6 +9,6 @@ RUN apt-get update \
 # Switch back to airflow user
 USER airflow
 
-# Install Python requirements
-COPY requirements.txt /requirements.txt
-RUN pip install --no-cache-dir -r /requirements.txt
+# Install dependencies
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt

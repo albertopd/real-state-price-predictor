@@ -210,8 +210,9 @@ __marimo__/
 data/*.parquet
 data/**/*.parquet
 
-# Ignore pickle models
+# Ignore models
 ml_models/*.pkl
+ml_models/*.joblib
 
 # Local mlflow artifacts and db
 mlruns/
