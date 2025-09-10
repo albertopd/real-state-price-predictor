@@ -3,7 +3,7 @@ from __future__ import annotations
 import os
 from datetime import datetime
 from pathlib import Path
-
+from typing import Any
 from airflow import DAG
 from airflow.decorators import task
 from airflow.models.baseoperator import chain
@@ -35,12 +35,20 @@ default_args = {
 }
 
 with DAG(
-    dag_id="real_estate_nightly",
+    dag_id="real_estate_pipeline",
     start_date=datetime(2025, 9, 7),
     schedule="0 2 * * *",  # 02:00 every night
     catchup=False,
     default_args=default_args,
-    tags=["real_estate", "nightly"],
+    tags=[
+        "real_estate",
+        "scraping",
+        "etl",
+        "ml-training",
+        "dvc",
+        "nightly",
+        "data-eng",
+    ]
 ) as dag:
 
     @task
@@ -83,11 +91,9 @@ with DAG(
         return str(out_file)
 
     @task
-    def stage_prepared_with_dvc():
+    def version_prepared_data_with_dvc():
         os.system("dvc add data/analysis data/training -q")
         os.system("dvc push -q")
-
-    from typing import Any
 
     @task
     def train_model(train_path: Any):
@@ -96,18 +102,18 @@ with DAG(
         return model_path
 
     @task
-    def stage_model_with_dvc():
+    def version_model_with_dvc():
         os.system("dvc add models -q")
         os.system("dvc push -q")
 
     # Graph
     t_scrape_appartments = scrape_apartments()
     t_scrape_houses = scrape_houses()
-    t_stage_raw = version_raw_data_with_dvc()
+    t_version_raw_data = version_raw_data_with_dvc()
     t_prep_analysis = prep_analysis()
     t_prep_training = prep_training()
-    t_stage_prepared = stage_prepared_with_dvc()
+    t_version_prepared_data = version_prepared_data_with_dvc()
     t_train_model = train_model(t_prep_training)
-    t_stage_model = stage_model_with_dvc()
+    t_version_model = version_model_with_dvc()
 
-    chain([t_scrape_appartments, t_scrape_houses], t_stage_raw, [t_prep_analysis, t_prep_training], t_stage_prepared, t_train_model, t_stage_model)
+    chain([t_scrape_appartments, t_scrape_houses], t_version_raw_data, [t_prep_analysis, t_prep_training], t_version_prepared_data, t_train_model, t_version_model)
