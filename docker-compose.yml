@@ -172,7 +172,7 @@ services:
       - PYTHONDONTWRITEBYTECODE=1
       - PYTHONUNBUFFERED=1
     volumes:
-      - ./ml_models:/ml_models
+      - ./ml_models:/app/ml_models
     ports:
       - "8000:8000"
     networks: [real_estate]

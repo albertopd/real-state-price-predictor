@@ -11,6 +11,9 @@ WORKDIR /app
 COPY src/api/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
+# Copy shared code
+COPY src/ml/ ./ml
+
 # Copy all api source code
 COPY src/api/ .
 

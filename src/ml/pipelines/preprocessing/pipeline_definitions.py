@@ -1,8 +1,8 @@
 import pandas as pd
 from sklearn.pipeline import Pipeline
-from pipelines.preprocessing.encoders import CategoryMapper, BooleanBinarizer
-from pipelines.preprocessing.enrichers import PostalCodeEnricher
-from pipelines.preprocessing.mappings import (
+from ml.pipelines.preprocessing.encoders import CategoryMapper, BooleanBinarizer
+from ml.pipelines.preprocessing.enrichers import PostalCodeEnricher
+from ml.pipelines.preprocessing.mappings import (
     property_type_map,
     property_subtype_map,
     province_map,

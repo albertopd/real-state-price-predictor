@@ -1,6 +1,5 @@
-from importlib import resources
-import os
 import pandas as pd
+from importlib import resources
 from sklearn.base import BaseEstimator, TransformerMixin
 
 
@@ -15,7 +14,7 @@ class PostalCodeEnricher(BaseEstimator, TransformerMixin):
 
     def fit(self, X, y=None):
         # Load and preprocess georef CSV once during fitting
-        with resources.open_text("pipelines.preprocessing.data", "georef-belgium-postal-codes.csv") as f:
+        with resources.open_text("ml.pipelines.preprocessing.data", "georef-belgium-postal-codes.csv") as f:
             geo_df = pd.read_csv(f, delimiter=";")
 
         geo_df[["lat", "lon"]] = geo_df["Geo Point"].str.split(",", expand=True)

@@ -14,8 +14,8 @@ from app.schemas.models import (
     PredictResponse,
     ErrorResponse,
 )
-from pipelines.preprocessing.pipeline_definitions import preprocessing_pipeline
-from predictors.price_predictor import predict_price
+from ml.pipelines.preprocessing.pipeline_definitions import preprocessing_pipeline
+from ml.prediction.price_predictor import predict_price
 
 
 app = FastAPI(
