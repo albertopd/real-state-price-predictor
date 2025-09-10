@@ -10,5 +10,15 @@ RUN apt-get update \
 USER airflow
 
 # Install dependencies
-COPY requirements.txt .
+COPY src/airflow/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy shared code
+COPY src/ml /opt/project/src/ml
+COPY src/scrapers /opt/project/src/scrapers
+
+# Copy dags
+COPY src/airflow/dags /opt/airflow/dags
+
+# Set Python path
+ENV PYTHONPATH=/opt/project/src

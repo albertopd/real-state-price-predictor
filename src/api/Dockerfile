@@ -7,14 +7,12 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 # Set workdir inside container
 WORKDIR /app
 
-# Install dependencies
-COPY requirements.txt .
+# Install dependencies first (better layer caching)
+COPY src/api/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy backend source
-COPY ./app /app/app
-COPY ./pipelines /app/pipelines
-COPY ./predictors /app/predictors
+# Copy all api source code
+COPY src/api/ .
 
 # Run FastAPI app with uvicorn
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]

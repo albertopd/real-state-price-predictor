@@ -1,6 +1,11 @@
 version: "3.9"
 
 services:
+  # =============================================================================
+  # DATABASE SERVICES
+  # =============================================================================
+
+  # PostgreSQL database for Airflow metadata (DAGs, tasks, logs)  
   airflow-postgres:
     image: postgres:15
     environment:
@@ -8,7 +13,7 @@ services:
       POSTGRES_PASSWORD: airflow
       POSTGRES_DB: airflow
     volumes:
-      - airflow_db:/var/lib/postgresql/data
+      - airflow_db_data:/var/lib/postgresql/data
     networks: [real_estate]
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U airflow -q"]
@@ -16,6 +21,7 @@ services:
       timeout: 5s
       retries: 5
 
+  # Redis broker for Airflow Celery executor task distribution
   airflow-redis:
     image: redis:7
     networks: [real_estate]
@@ -25,38 +31,56 @@ services:
       timeout: 5s
       retries: 5
 
+  # PostgreSQL database for MLflow experiments and model metadata
+  mlflow-postgres:
+    image: postgres:15
+    container_name: mlflow-postgres
+    environment:
+      POSTGRES_USER: mlflow
+      POSTGRES_PASSWORD: mlflow
+      POSTGRES_DB: mlflow
+    volumes:
+      - mlflow_db_data:/var/lib/postgresql/data
+    networks: [real_estate]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U mlflow -q"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # =============================================================================
+  # AIRFLOW SERVICES
+  # =============================================================================
+
+  # One-time initialization of Airflow database and admin user  
   airflow-init:
     build:
-      context: ./src/airflow
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: src/airflow/Dockerfile
+    container_name: airflow-init
     depends_on: [airflow-postgres, airflow-redis]
     environment:
       AIRFLOW__CORE__LOAD_EXAMPLES: "false"
       AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@airflow-postgres:5432/airflow
     entrypoint: /bin/bash
     command: -c "airflow db init && airflow users create --username admin --password admin --firstname a --lastname b --role Admin --email a@b.com"
-    volumes:
-      - ./src/airflow/dags:/opt/airflow/dags
     networks: [real_estate]
 
+  # Airflow web UI for DAG management and monitoring
   airflow-webserver:
     build:
-      context: ./src/airflow
-      dockerfile: Dockerfile
-    depends_on: [airflow-postgres, airflow-redis]
+      context: .
+      dockerfile: src/airflow/Dockerfile
+    container_name: airflow-webserver
+    depends_on: [airflow-postgres, airflow-redis, airflow-init]
     environment:
       PROJECT_ROOT: /opt/project
-      PYTHONPATH: /opt/project/src 
       AIRFLOW__CORE__LOAD_EXAMPLES: "false"
       AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@airflow-postgres:5432/airflow
       AIRFLOW__CELERY__BROKER_URL: redis://airflow-redis:6379/0
       AIRFLOW__CELERY__RESULT_BACKEND: db+postgresql://airflow:airflow@airflow-postgres:5432/airflow
     command: webserver
     ports: ["8089:8080"]
-    volumes:
-      - ./src/airflow/dags:/opt/airflow/dags
-      - ./src/ml:/opt/project/src/ml
-      - ./src/scrapers:/opt/project/src/scrapers
     networks: [real_estate]
     healthcheck:
       test: ["CMD", "curl", "--fail", "--silent", "http://localhost:8080/health"]
@@ -64,23 +88,21 @@ services:
       timeout: 10s
       retries: 5
 
+  # Airflow task scheduler and executor
   airflow-scheduler:
     build:
-      context: ./src/airflow
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: src/airflow/Dockerfile
+    container_name: airflow-scheduler
     depends_on: [airflow-postgres, airflow-redis, airflow-webserver]
     environment:
       PROJECT_ROOT: /opt/project
-      PYTHONPATH: /opt/project/src
       AIRFLOW__CORE__LOAD_EXAMPLES: "false"
       AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@airflow-postgres:5432/airflow
       AIRFLOW__CELERY__BROKER_URL: redis://airflow-redis:6379/0
       AIRFLOW__CELERY__RESULT_BACKEND: db+postgresql://airflow:airflow@airflow-postgres:5432/airflow
     command: scheduler
     volumes:
-      - ./src/airflow/dags:/opt/airflow/dags
-      - ./src/ml:/opt/project/src/ml
-      - ./src/scrapers:/opt/project/src/scrapers
       - ./data:/opt/project/data
       - ./ml_models:/opt/project/ml_models
     networks: [real_estate]
@@ -90,55 +112,62 @@ services:
       timeout: 10s
       retries: 5
 
-  mlflow-db:
-    image: postgres:15
-    container_name: mlflow-db
-    environment:
-      POSTGRES_USER: mlflow
-      POSTGRES_PASSWORD: mlflow
-      POSTGRES_DB: mlflow
-    volumes:
-      - mlflow_db_data:/var/lib/postgresql/data
-    networks: [real_estate]
+  # =============================================================================
+  # ML & ANALYTICS SERVICES
+  # =============================================================================
 
+  # MLflow experiment tracking and model registry server
   mlflow:
-    image: ghcr.io/mlflow/mlflow:v2.16.0
+    build:
+      context: .
+      dockerfile: src/mlflow/Dockerfile
     container_name: mlflow
     depends_on:
-      - mlflow-db
+      - mlflow-postgres
     environment:
-      BACKEND_STORE_URI: postgresql://mlflow:mlflow@mlflow-db:5432/mlflow
+      BACKEND_STORE_URI: postgresql://mlflow:mlflow@mlflow-postgres:5432/mlflow
+      MLFLOW_ENABLE_MODEL_REGISTRY: "true"
+      MLFLOW_TRACKING_URI: http://0.0.0.0:5001
       ARTIFACT_ROOT: /mlruns
+      MLFLOW_BACKEND_STORE_URI: postgresql://mlflow:mlflow@mlflow-postgres:5432/mlflow
+      MLFLOW_DEFAULT_ARTIFACT_ROOT: /mlruns
     command: >
       mlflow server
       --host 0.0.0.0
       --port 5001
-      --backend-store-uri postgresql://mlflow:mlflow@mlflow-db:5432/mlflow
+      --backend-store-uri postgresql://mlflow:mlflow@mlflow-postgres:5432/mlflow
       --default-artifact-root /mlruns
+      --serve-artifacts
     volumes:
-      - mlruns:/mlruns
+      - mlflow_artifacts_data:/mlruns
       - ./ml_models:/opt/project/ml_models
       - ./data:/opt/project/data
-      - ./src/mlflow:/opt/project/src/mlflow
     ports:
       - "5001:5001"
     networks: [real_estate]
 
+  # =============================================================================
+  # APPLICATION SERVICES
+  # =============================================================================
+
+  # Streamlit dashboard for data visualization and analytics
   dashboard-app:
     build:
       context: .
       dockerfile: src/dashboard/Dockerfile
+    container_name: dashboard-app
     volumes:
-      - ./src/dashboard/app:/app/src/dashboard/app
       - ./data:/app/data
     ports:
       - "8501:8501"
     networks: [real_estate]
 
+  # FastAPI service for real estate price predictions
   predictor-api:
     build:
-      context: ./src/api
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: src/api/Dockerfile
+    container_name: predictor-api
     environment:
       - PYTHONDONTWRITEBYTECODE=1
       - PYTHONUNBUFFERED=1
@@ -157,7 +186,8 @@ networks:
   real_estate: {}
 
 volumes:
-  airflow_db: {}
-  mlruns: {}
+  airflow_db_data: {}
   mlflow_db_data: {}
+  mlflow_artifacts_data: {}
+
   #TODO: Add volume for all the app data and models

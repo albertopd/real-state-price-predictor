@@ -3,31 +3,57 @@ import os
 import mlflow
 import mlflow.sklearn as mlflow_sklearn
 import joblib
-import shutil
-import tempfile
 import pandas as pd
 from sklearn.metrics import mean_absolute_error, r2_score
-from mlflow.exceptions import MlflowException
+from mlflow.tracking import MlflowClient
+from mlflow.models.signature import infer_signature
 
 # --- Detect MLflow URI ---
 MLFLOW_TRACKING_URI = os.getenv(
     "MLFLOW_TRACKING_URI",
-    "http://mlflow:5001" if os.path.exists("/.dockerenv") else "http://localhost:5001"
+    "http://mlflow:5001" if os.path.exists("/.dockerenv") else "http://localhost:5001",
 )
 mlflow.set_tracking_uri(MLFLOW_TRACKING_URI)
+
+REGISTERED_MODEL_NAME = "RealEstatePriceModel"
+
+
+def test_mlflow_connection():
+    """Test if MLflow server is accessible and Model Registry is enabled"""
+    try:
+        client = MlflowClient()
+        # Test basic connection
+        experiments = client.search_experiments()
+        print(f"Connected to MLflow. Found {len(experiments)} experiments.")
+
+        # Test Model Registry
+        try:
+            models = client.search_registered_models()
+            print(f"Model Registry is accessible. Found {len(models)} registered models.")
+            return True
+        except Exception as e:
+            print(f"Model Registry not accessible: {e}")
+            return False
+    except Exception as e:
+        print(f"Cannot connect to MLflow: {e}")
+        return False
 
 
 def run_latest_experiment(test_data: Path, models_dir: Path):
     print(f"Using MLflow tracking at: {MLFLOW_TRACKING_URI}")
+    print(f"MLflow version: {mlflow.__version__}\n")
+
+    # Test connection first
+    registry_available = test_mlflow_connection()
 
     # find latest model file
     pkl_files = sorted(models_dir.glob("*.pkl"), reverse=True)
     if not pkl_files:
-        raise FileNotFoundError(f"No models found in {models_dir}")
+        raise FileNotFoundError(f"\nNo models found in {models_dir}")
     latest_model_path = pkl_files[0]
-    print(f"Loading latest model: {latest_model_path}")
+    print(f"\nLoading latest model: {latest_model_path}")
 
-    # load model (joblib) and test data
+    # load model and test data
     model = joblib.load(latest_model_path)
     df = pd.read_parquet(test_data)
     y_test = df["target_price_eur"]
@@ -37,49 +63,54 @@ def run_latest_experiment(test_data: Path, models_dir: Path):
     mae = mean_absolute_error(y_test, y_pred)
     r2 = r2_score(y_test, y_pred)
 
-    print(f"Test MAE: {mae:.2f}, R2: {r2:.3f}")
+    print(f"\nTest MAE: {mae:.2f}, R2: {r2:.3f}\n")
 
     with mlflow.start_run(run_name="manual_test_run") as run:
         mlflow.log_metric("test_mae", float(mae))
         mlflow.log_metric("test_r2", float(r2))
 
-        # Try to log model using mlflow.sklearn.log_model.
-        # If the tracking server does not support the logged-models API (404),
-        # fall back to uploading the model file as a plain artifact.
-        try:
-            print("Attempting mlflow.sklearn.log_model(...)")
-            # avoid registry by not passing a registered_model_name; still may attempt registry internally
-            mlflow_sklearn.log_model(model, artifact_path="model_tested")
-            print("mlflow.sklearn.log_model succeeded.")
-        except MlflowException as e:
-            # Known problem: tracking-only server returns 404 for logged-models endpoint.
-            print("mlflow.sklearn.log_model failed with MlflowException; falling back to log_artifact().")
-            print("Exception:", str(e))
-            # copy the model file into a temp dir and upload
-            tmp_dir = Path(tempfile.mkdtemp(prefix="mlflow_model_tmp_"))
-            try:
-                tmp_file = tmp_dir / latest_model_path.name
-                shutil.copy(latest_model_path, tmp_file)
-                mlflow.log_artifact(str(tmp_file), artifact_path="model_tested")
-                print(f"Uploaded model as artifact to run {run.info.run_id}")
-            finally:
-                # clean up temp dir
-                shutil.rmtree(tmp_dir, ignore_errors=True)
-        except Exception as ex:
-            # any other unexpected error -> fallback too
-            print("Unexpected error while logging model, fallback to log_artifact().")
-            print("Error:", str(ex))
-            tmp_dir = Path(tempfile.mkdtemp(prefix="mlflow_model_tmp_"))
-            try:
-                tmp_file = tmp_dir / latest_model_path.name
-                shutil.copy(latest_model_path, tmp_file)
-                mlflow.log_artifact(str(tmp_file), artifact_path="model_tested")
-                print(f"Uploaded model as artifact to run {run.info.run_id}")
-            finally:
-                shutil.rmtree(tmp_dir, ignore_errors=True)
+        # Create model signature and input example
+        from mlflow.models.signature import infer_signature
 
-    print("Experiment finished. View run at:", mlflow.get_tracking_uri(), f"/#/experiments/0/runs/{run.info.run_id}")
+        # Use a sample of test data for input example (first few rows)
+        input_example = X_test.head(5)
 
+        # Infer signature from test data
+        signature = infer_signature(X_test, y_pred)
+
+        if registry_available:
+            try:
+                # Log and register model with signature and input example
+                mlflow_sklearn.log_model(
+                    sk_model=model,
+                    name="model",
+                    registered_model_name=REGISTERED_MODEL_NAME,
+                    signature=signature,
+                    input_example=input_example,
+                )
+                print(f"Model logged and registered as '{REGISTERED_MODEL_NAME}' with signature")
+            except Exception as e:
+                print(f"Model registration failed: {e}")
+                # Fall back to just logging
+                mlflow_sklearn.log_model(
+                    sk_model=model,
+                    name="model",
+                    signature=signature,
+                    input_example=input_example,
+                )
+                print("Model logged without registration")
+        else:
+            # Just log the model without registration
+            mlflow_sklearn.log_model(
+                sk_model=model,
+                name="model",
+                signature=signature,
+                input_example=input_example,
+            )
+            print("Model logged without registration (Registry not available)")
+
+        run_url = f"{MLFLOW_TRACKING_URI}/#/experiments/{run.info.experiment_id}/runs/{run.info.run_id}"
+        exp_url = f"{MLFLOW_TRACKING_URI}/#/experiments/{run.info.experiment_id}"
 
 if __name__ == "__main__":
     repo_root = Path(__file__).resolve().parents[2]
