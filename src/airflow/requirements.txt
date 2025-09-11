@@ -4,5 +4,4 @@ pyarrow
 fastparquet
 scikit-learn
 mlflow
-dvc
 pyyaml
