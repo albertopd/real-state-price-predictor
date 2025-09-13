@@ -206,9 +206,15 @@ marimo/_static/
 marimo/_lsp/
 __marimo__/
 
-# Ignore all parquet files in data/ and its subdirectories
+# Ignore all files in data/ and its subdirectories
 data/**/*.parquet
+data/**/*.xml
+data/**/*.txt
+data/**/*.joblib
 
 # Ignore all model files in ml_models/ directory
 ml_models/*.pkl
 ml_models/*.joblib
+
+# Ignore all files in mlruns/ directory
+mlruns/

@@ -5,10 +5,10 @@ from pathlib import Path
 st.set_page_config(page_title="Real Estate Dashboard", layout="wide")
 
 DATA_PATH = (
-    Path(__file__).resolve().parents[3] / "data" / "analysis" / "listings.parquet"
+    Path(__file__).resolve().parents[3] / "data" / "analysis" / "analysis_dataset.parquet"
 )
 
-st.title("Real Estate Dashboard")
+st.title("Real Estate Analysis Dashboard")
 
 if not DATA_PATH.exists():
     st.warning("Analysis dataset not found. Run the Airflow DAG to generate it.")
@@ -18,19 +18,19 @@ else:
     # Filters
     cols = st.columns(3)
     type_sel = cols[0].selectbox(
-        "Type", options=["All"] + sorted(df["type"].dropna().unique().tolist())
+        "Type", options=["All"] + sorted(df["Type of property"].dropna().unique().tolist())
     )
     city = cols[1].selectbox(
-        "City", options=["All"] + sorted(df["city"].dropna().unique().tolist())
+        "Locality", options=["All"] + sorted(df["Locality"].dropna().unique().tolist())
     )
     min_bed = cols[2].number_input("Min bedrooms", value=1, step=1)
 
     f = df.copy()
     if type_sel != "All":
-        f = f[f["type"] == type_sel]
+        f = f[f["Type of property"] == type_sel]
     if city != "All":
-        f = f[f["city"] == city]
-    f = f[f["bedrooms"] >= min_bed]
+        f = f[f["Locality"] == city]
+    f = f[f["Number of bedrooms"] >= min_bed]
 
     st.metric("Listings", len(f))
     st.metric("Median price €/m²", round(f["price_per_m2"].median() if len(f) else 0))

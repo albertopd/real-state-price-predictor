@@ -99,6 +99,7 @@ services:
       AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@airflow-postgres:5432/airflow
       AIRFLOW__CELERY__BROKER_URL: redis://airflow-redis:6379/0
       AIRFLOW__CELERY__RESULT_BACKEND: db+postgresql://airflow:airflow@airflow-postgres:5432/airflow
+      MLFLOW_TRACKING_URI: http://mlflow:5001
     command: scheduler
     volumes:
       - ./data:/opt/project/data
@@ -110,6 +111,8 @@ services:
       timeout: 10s
       retries: 5
 
+  #TODO: Add airflow-worker service for distributed task execution with Celery
+
   # =============================================================================
   # ML & ANALYTICS SERVICES
   # =============================================================================
@@ -118,7 +121,7 @@ services:
   mlflow:
     build:
       context: .
-      dockerfile: src/mlflow/Dockerfile
+      dockerfile: mlflow/Dockerfile
     container_name: mlflow
     depends_on:
       - mlflow-postgres
@@ -130,19 +133,22 @@ services:
       MLFLOW_BACKEND_STORE_URI: postgresql://mlflow:mlflow@mlflow-postgres:5432/mlflow
       MLFLOW_DEFAULT_ARTIFACT_ROOT: /mlruns
     command: >
+      sh -c "
+      mkdir -p /mlruns &&
+      chmod -R 755 /mlruns &&
       mlflow server
       --host 0.0.0.0
       --port 5001
       --backend-store-uri postgresql://mlflow:mlflow@mlflow-postgres:5432/mlflow
       --default-artifact-root /mlruns
       --serve-artifacts
+      "
     volumes:
-      - mlflow_artifacts_data:/mlruns
-      - ./ml_models:/opt/project/ml_models
-      - ./data:/opt/project/data
+      - ./mlflow/mlruns:/mlruns:rw
     ports:
       - "5001:5001"
     networks: [real_estate]
+    user: root
 
   # =============================================================================
   # APPLICATION SERVICES
@@ -186,4 +192,3 @@ networks:
 volumes:
   airflow_db_data:
   mlflow_db_data:
-  mlflow_artifacts_data: 

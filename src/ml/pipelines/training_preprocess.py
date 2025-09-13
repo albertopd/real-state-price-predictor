@@ -1,67 +1,148 @@
-from __future__ import annotations
-from pathlib import Path
 import pandas as pd
+import numpy as np
+import joblib
+from pathlib import Path
 from sklearn.impute import SimpleImputer
 from sklearn.compose import ColumnTransformer
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
 from sklearn.pipeline import Pipeline
-from sklearn.model_selection import train_test_split
+from utils.logging_utils import setup_logger
+
+
+TRAINING_DATASET_FILE = "training_dataset.parquet"
+PREPROCESSOR_FILE = "preprocessor.joblib"
+
+logger = setup_logger(__name__)
 
 
 def _assemble_dataframe(raw_dir: Path) -> pd.DataFrame:
-    apts = list((raw_dir / "apartments").glob("*.parquet"))
-    houses = list((raw_dir / "houses").glob("*.parquet"))
+    """
+    Assemble dataframe by loading the latest parquet file from apartments and houses folders.
+
+    Args:
+        raw_dir: Directory containing 'apartments' and 'houses' subdirectories
+
+    Returns:
+        Combined dataframe from the latest files in each category
+    """
     frames = []
-    for p in apts + houses:
-        frames.append(pd.read_parquet(p))
+
+    # Process apartments - get latest file
+    apartments_dir = raw_dir / "apartments"
+    if apartments_dir.exists():
+        apt_files = list(apartments_dir.glob("*.parquet"))
+        if apt_files:
+            # Sort by modification time and get the latest
+            latest_apt = max(apt_files, key=lambda p: p.stat().st_mtime)
+            frames.append(pd.read_parquet(latest_apt))
+            logger.info(f"Loaded latest apartments file: {latest_apt.name}")
+
+    # Process houses - get latest file
+    houses_dir = raw_dir / "houses"
+    if houses_dir.exists():
+        house_files = list(houses_dir.glob("*.parquet"))
+        if house_files:
+            # Sort by modification time and get the latest
+            latest_house = max(house_files, key=lambda p: p.stat().st_mtime)
+            frames.append(pd.read_parquet(latest_house))
+            logger.info(f"Loaded latest houses file: {latest_house.name}")
+
     if not frames:
-        raise RuntimeError("No raw data found to build training dataset")
-    return pd.concat(frames, ignore_index=True)
+        raise RuntimeError("No parquet files found in apartments or houses directories")
+
+    combined_df = pd.concat(frames, ignore_index=True)
+    logger.info(f"Combined dataset shape: {combined_df.shape}")
+
+    return combined_df
 
 
-def build_training_datasets(raw_dir: Path, out_dir: Path, test_size: float = 0.2) -> None:
+def prepare_training_dataset(raw_dir: Path, out_dir: Path) -> Path:
+    """
+    Prepare and preprocess the training dataset for later use by a trainer.
+
+    Args:
+        raw_dir: Directory containing raw data files
+        out_dir: Directory to save the processed dataset
+    """
     df = _assemble_dataframe(raw_dir)
 
     # Drop rows with missing critical fields
-    df = df.dropna(subset=["price_eur", "living_area_m2", "postal_code"])
+    df = df.dropna(subset=["Price", "Living area", "Postal Code"])
+
+    if df.empty:
+        raise ValueError(
+            "No valid data remaining after dropping rows with missing critical fields"
+        )
 
     # Define features and target
-    y = df["price_eur"]
-    X = df.drop(columns=["price_eur", "id", "listing_date"])
+    y = df["Price"]
+    X = df.drop(columns=["Price"])
 
-    numeric = [c for c in X.columns if X[c].dtype != "object"]
-    categoric = [c for c in X.columns if X[c].dtype == "object"]
+    # Identify column types
+    numeric_cols = [col for col in X.columns if X[col].dtype != "object"]
+    categorical_cols = [col for col in X.columns if X[col].dtype == "object"]
 
-    # Preprocessing: impute numeric NaNs, scale numeric, encode categorical
-    pre = ColumnTransformer(
+    # Create preprocessing pipeline
+    preprocessor = ColumnTransformer(
         transformers=[
-            ("num", Pipeline([
-                ("imputer", SimpleImputer(strategy="mean")),
-                ("scaler", StandardScaler())
-            ]), numeric),
-            ("cat", OneHotEncoder(handle_unknown="ignore", sparse_output=False), categoric),
+            (
+                "numeric",
+                Pipeline(
+                    [
+                        ("imputer", SimpleImputer(strategy="mean")),
+                        ("scaler", StandardScaler()),
+                    ]
+                ),
+                numeric_cols,
+            ),
+            (
+                "categorical",
+                OneHotEncoder(handle_unknown="ignore", sparse_output=False),
+                categorical_cols,
+            ),
         ]
     )
 
-    pipe = Pipeline([("pre", pre)])
-    X_trans = pipe.fit_transform(X)
+    # Fit and transform the data
+    X_transformed = preprocessor.fit_transform(X)
 
-    # Build transformed dataframe
-    X_cols_num = numeric
-    X_cols_cat = list(pipe.named_steps["pre"].named_transformers_["cat"].get_feature_names_out(categoric))
-    X_all = pd.DataFrame(X_trans, columns=X_cols_num + X_cols_cat)
-    X_all["target_price_eur"] = y.reset_index(drop=True)
+    # Ensure we have a dense array
+    if hasattr(X_transformed, "toarray"):
+        # It's a sparse matrix - cast to Any to avoid type checker issues
+        X_transformed = getattr(X_transformed, "toarray")()
 
-    # Split train/test
-    train_df, test_df = train_test_split(X_all, test_size=test_size, random_state=42)
+    # Ensure it's a proper numpy array
+    X_transformed = np.asarray(X_transformed)
 
-    # Save both parquet files
+    # Get feature names for the transformed data
+    numeric_feature_names = numeric_cols
+    categorical_feature_names = list(
+        preprocessor.named_transformers_["categorical"].get_feature_names_out(
+            categorical_cols
+        )
+    )
+    all_feature_names = numeric_feature_names + categorical_feature_names
+
+    # Create final dataframe with transformed features and target
+    processed_df = pd.DataFrame(X_transformed, columns=all_feature_names)
+    processed_df["target_price"] = y.reset_index(drop=True)
+
+    # Ensure output directory exists
     out_dir.mkdir(parents=True, exist_ok=True)
-    train_file = out_dir / "train_data.parquet"
-    test_file = out_dir / "test_data.parquet"
 
-    train_df.to_parquet(train_file, index=False)
-    test_df.to_parquet(test_file, index=False)
+    # Save processed dataset
+    training_dataset_path = out_dir / TRAINING_DATASET_FILE
+    processed_df.to_parquet(training_dataset_path, index=False)
 
-    print(f"Training set saved to {train_file} ({train_df.shape})")
-    print(f"Test set saved to {test_file} ({test_df.shape})")
+    # Also save the fitted preprocessor for potential reuse
+    preprocessor_path = out_dir / PREPROCESSOR_FILE
+    joblib.dump(preprocessor, preprocessor_path)
+
+    logger.info(f"Processed dataset saved to {training_dataset_path}")
+    logger.info(f"Dataset shape: {processed_df.shape}")
+    logger.info(
+        f"Features: {len(all_feature_names)} ({len(numeric_cols)} numeric, {len(categorical_feature_names)} categorical)"
+    )
+    logger.info(f"Preprocessor saved to {preprocessor_path}")
+
+    return training_dataset_path

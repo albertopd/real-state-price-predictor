@@ -5,6 +5,7 @@ COPY src/airflow/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy shared code
+COPY src/utils /opt/project/src/utils
 COPY src/ml /opt/project/src/ml
 COPY src/scrapers /opt/project/src/scrapers
 
